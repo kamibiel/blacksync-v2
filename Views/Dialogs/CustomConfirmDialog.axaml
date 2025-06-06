@@ -1,0 +1,24 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="BlackSync.Views.Dialogs.CustomConfirmDialog"
+        Width="400" Height="220"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Title="{Binding Titulo}">
+
+  <Border Background="White" Padding="20">
+    <StackPanel Spacing="15">
+
+      <!-- Mensagem -->
+      <TextBlock x:Name="MensagemTextBlock" TextWrapping="Wrap" FontSize="14"/>
+
+      <!-- Botões -->
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+        <Button x:Name="SimButton" Content="Sim" Width="80"/>
+        <Button x:Name="NaoButton" Content="Não" Width="80"/>
+        <Button x:Name="CancelarButton" Content="Cancelar" Width="80"/>
+      </StackPanel>
+
+    </StackPanel>
+  </Border>
+</Window>

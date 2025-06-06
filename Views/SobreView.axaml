@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="BlackSync.Views.SobreView"
+             mc:Ignorable="d">
+  <Grid Margin="20">
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="15">
+
+      <!-- Nome do sistema -->
+      <TextBlock Text="🖥️ BlackSync" FontSize="28" FontWeight="Bold" TextAlignment="Center"/>
+
+      <!-- Versão -->
+      <TextBlock Text="{Binding VersaoSistema, StringFormat='🛠️ Versão {0}'}" FontSize="16" TextAlignment="Center"/>
+
+      <!-- Desenvolvido por -->
+      <TextBlock Text="Desenvolvido por Gabriel Bonifácio" FontSize="14" Foreground="Gray" TextAlignment="Center"/>
+
+      <!-- Descrição -->
+      <TextBlock TextWrapping="Wrap"
+                 TextAlignment="Center"
+                 MaxWidth="500"
+                 Foreground="#000"
+                 FontSize="14"
+                 Text="O BlackSync é uma aplicação para sincronização entre bancos de dados Firebird e MySQL, com foco em performance, logs e controle de conexão. Desenvolvido em Avalonia com C#." />
+
+    </StackPanel>
+  </Grid>
+</UserControl>

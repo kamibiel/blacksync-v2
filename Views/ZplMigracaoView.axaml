@@ -1,0 +1,81 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BlackSync.Views.ZplMigracaoView">
+
+  <ScrollViewer>
+    <StackPanel Spacing="20" HorizontalAlignment="Center" Margin="0,20">
+
+      <!-- Título -->
+      <TextBlock Text="Migração ZPL"
+                 FontSize="18"
+                 FontWeight="Bold"
+                 Foreground="#000"
+                 HorizontalAlignment="Center"/>
+
+      <!-- Input + botão lado a lado -->
+      <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+        <TextBox x:Name="txtCaminhoArquivoAccess"
+                 Width="350"
+                 Height="35"
+                 IsReadOnly="True"
+                 Foreground="#000"/>
+
+        <Button x:Name="btnSelecionar"
+                Background="Transparent"
+                BorderThickness="0"
+                Width="40" Height="40"
+                ToolTip.Tip="Selecionar">
+          <Image Source="avares://BlackSync/Assets/Icons/file-search.png"
+                 Width="30" Height="30"/>
+        </Button>
+      </StackPanel>
+
+      <!-- Barra de progresso -->
+      <ProgressBar x:Name="pbProgresso"
+                   IsVisible="False"
+                   Width="400"
+                   Height="20"
+                   Minimum="0"
+                   Maximum="100"/>
+
+      <!-- Botões: Limpar + Converter -->
+      <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
+        <Button x:Name="btnLimpar"
+                Background="Transparent"
+                BorderThickness="0"
+                Width="40" Height="40"
+                ToolTip.Tip="Limpar">
+          <Image Source="avares://BlackSync/Assets/Icons/eraser.png"
+                 Width="30" Height="30"/>
+        </Button>
+
+        <Button x:Name="btnConverter"
+                Background="Transparent"
+                BorderThickness="0"
+                Width="40" Height="40"
+                ToolTip.Tip="Converter">
+          <Image Source="avares://BlackSync/Assets/Icons/cloud-upload-black.png"
+                 Width="30" Height="30"/>
+        </Button>
+      </StackPanel>
+
+      <!-- Log de Verificação -->
+      <StackPanel HorizontalAlignment="Center" Spacing="10">
+        <TextBlock Text="Log de verificação"
+                   FontSize="16"
+                   FontWeight="Bold"
+                   Foreground="#000"
+                   HorizontalAlignment="Center"/>
+
+        <TextBox x:Name="txtLog"
+                 Width="400"
+                 Height="120"
+                 AcceptsReturn="True"
+                 IsReadOnly="True"
+                 Foreground="#000"
+                 TextWrapping="Wrap"/>
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

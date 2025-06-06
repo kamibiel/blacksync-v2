@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BlackSync.Views.LogsView">
+
+  <ScrollViewer>
+    <StackPanel Margin="20" Spacing="10">
+
+      <TextBlock Text="Logs do Sistema"
+                 FontSize="22"
+                 FontWeight="Bold"
+                 HorizontalAlignment="Center"/>
+
+      <TextBox x:Name="txtLogs"
+               AcceptsReturn="True"
+               IsReadOnly="True"
+               FontFamily="Consolas"
+               Foreground="#000"
+               BorderBrush="#8a0194"
+               BorderThickness="1"
+               FontSize="13"
+               Height="400"
+               TextWrapping="Wrap"/>
+
+      <Button
+              Background="Transparent"
+              BorderThickness="0"
+              Width="40" Height="40"
+              ToolTip.Tip="Atualizar"
+              HorizontalAlignment="Center"
+              Foreground="White">
+        <Image Source="avares://BlackSync/Assets/Icons/refresh-cw.png"
+               Width="30" Height="30"/>
+      </Button>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

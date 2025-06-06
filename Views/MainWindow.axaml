@@ -1,0 +1,88 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="https://github.com/avaloniaui"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BlackSync.Views"
+        x:Class="BlackSync.Views.MainWindow"
+        Width="900" Height="750"        
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen">
+
+  <DockPanel>
+
+    <!-- Sidebar -->
+    <Border Width="200" Background="#1E1E2D" DockPanel.Dock="Left">
+      <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Título -->
+        <Border Grid.Row="0" Padding="10">
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6">
+            <Image Source="avares://BlackSync/Assets/Icons/cloud-upload.png"
+                   Width="20" Height="20"/>
+
+            <TextBlock Text="BlackSync"
+                       Foreground="#8a0194"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"/>
+          </StackPanel>
+        </Border>
+
+
+        <!-- Menu Scrollável -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+          <ItemsControl ItemsSource="{Binding MenuItems}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <StackPanel>
+                  <Button Classes="menu-button"
+                          Content="{Binding Title}"
+                          Background="Transparent"
+                          HorizontalAlignment="Stretch"
+                          FontWeight="Bold"
+                          Padding="10"
+                          Click="MenuItem_Click"/>
+                  <ItemsControl ItemsSource="{Binding SubItems}" IsVisible="{Binding IsExpanded}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Button Classes="menu-button"
+                                Content="{Binding}"
+                                Margin="20,6"
+                                Background="Transparent"
+                                FontSize="14"
+                                HorizontalAlignment="Left"
+                                Click="SubItem_Click"/>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Botão "Sair" -->
+        <Button Grid.Row="2"
+        Background="Transparent"
+        BorderThickness="0"
+        Padding="10"
+        HorizontalAlignment="Stretch"
+        Click="BtnSair_Click">
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
+            <Image Source="avares://BlackSync/Assets/Icons/sair.png"
+                   Width="30" Height="30"/>
+          </StackPanel>
+        </Button>
+      </Grid>
+    </Border>
+
+    <!-- Conteúdo principal -->
+    <ContentControl x:Name="MainContent" Margin="20">
+      <TextBlock Text="Selecione uma opção no menu." FontSize="18" Foreground="#333"/>
+    </ContentControl>
+
+  </DockPanel>
+</Window>

@@ -1,0 +1,25 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BlackSync.App"
+             xmlns:local="clr-namespace:BlackSync"
+             RequestedThemeVariant="Light">
+
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://BlackSync/Styles/GlobalStyles.axaml"/>
+  </Application.Styles>
+
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://BlackSync/Styles/MessageBoxOverride.axaml"/>
+      </ResourceDictionary.MergedDictionaries>
+      
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.DataTemplates>
+    <local:ViewLocator/>
+  </Application.DataTemplates>
+
+</Application>
