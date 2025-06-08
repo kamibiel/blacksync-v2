@@ -37,6 +37,11 @@ namespace BlackSync.Views
                             LogService.RegistrarLog("INFO", "Acesso à tela de Configurações.");
                             break;
 
+                        case "Manutenção":
+                            MainContent.Content = new ManutencaoView();
+                            LogService.RegistrarLog("INFO", "Acesso à tela de Manutenção.");
+                            break;
+
                         case "Configuração":
                             MainContent.Content = new ConfiguracaoView();
                             LogService.RegistrarLog("INFO", "Acesso à tela de Configurações.");

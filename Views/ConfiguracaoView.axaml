@@ -2,82 +2,84 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BlackSync.Views.ConfiguracaoView">
 
-  <ScrollViewer>
-    <StackPanel 
-        Margin="20" 
-        Spacing="20"
-        HorizontalAlignment="Center">
-      <TextBlock Text="Configuração"
-                 FontSize="22"
-                 FontWeight="Bold"
-                 HorizontalAlignment="Center"/>
+  <Grid Margin="20">
+    <ScrollViewer>
+      <StackPanel
+          Margin="20"
+          Spacing="20"
+          HorizontalAlignment="Center">
+        <TextBlock Text="Configuração"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"/>
 
-      <!-- FIREBIRD -->
-      <StackPanel Spacing="10">
-        <TextBlock Text="Conexão do Firebird"
-                   FontSize="16" FontWeight="Bold"/>
+        <!-- FIREBIRD -->
+        <StackPanel Spacing="10">
+          <TextBlock Text="Conexão do Firebird"
+                     FontSize="16" FontWeight="Bold"/>
 
-        <StackPanel Orientation="Horizontal" Spacing="10">
-          <TextBox x:Name="txtDSN" Width="300" Watermark="DSN" Foreground="#000"/>
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBox x:Name="txtDSN" Width="300" Watermark="DSN" Foreground="#000"/>
+          </StackPanel>
         </StackPanel>
+
+        <!-- MYSQL -->
+        <StackPanel Spacing="10">
+          <TextBlock Text="Conexão do MySQL"
+                     FontSize="16" FontWeight="Bold"/>
+
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBox x:Name="txtServidor" Width="300" Watermark="Servidor" Foreground="#000"/>
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBox x:Name="txtBanco" Width="300" Watermark="Banco de Dados" Foreground="#000"/>
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBox x:Name="txtUsuario" Width="300" Watermark="Usuário" Foreground="#000"/>
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBox x:Name="txtSenha" Width="300" Watermark="Senha" AcceptsReturn="False" PasswordChar="*" Foreground="#000"/>
+          </StackPanel>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal"
+              HorizontalAlignment="Center"
+              Spacing="20"
+              Margin="0,10,0,0">
+
+          <!-- Botão de Testar Conexão com Ícone -->
+          <Button Click="BtnLimpar_Click"
+           Background="Transparent"
+           BorderThickness="0"
+           Width="40" Height="40"
+           ToolTip.Tip="Limpar">
+            <Image Source="avares://BlackSync/Assets/Icons/eraser.png"
+                   Width="30" Height="30"/>
+          </Button>
+
+          <Button Click="BtnTestarConexao_Click"
+            Background="Transparent"
+            BorderThickness="0"
+            Width="40" Height="40"
+            ToolTip.Tip="Testar Conexão">
+            <Image Source="avares://BlackSync/Assets/Icons/unplug.png"
+                   Width="30" Height="30"/>
+          </Button>
+
+          <Button Click="BtnSalvar_Click"
+            Background="Transparent"
+            BorderThickness="0"
+            Width="40" Height="40"
+            ToolTip.Tip="Salvar">
+            <Image Source="avares://BlackSync/Assets/Icons/download.png"
+                   Width="30" Height="30"/>
+          </Button>
+        </StackPanel>
+
       </StackPanel>
-
-      <!-- MYSQL -->
-      <StackPanel Spacing="10">
-        <TextBlock Text="Conexão do MySQL"
-                   FontSize="16" FontWeight="Bold"/>
-
-        <StackPanel Orientation="Horizontal" Spacing="10">
-          <TextBox x:Name="txtServidor" Width="300" Watermark="Servidor" Foreground="#000"/>
-        </StackPanel>
-
-        <StackPanel Orientation="Horizontal" Spacing="10">
-          <TextBox x:Name="txtBanco" Width="300" Watermark="Banco de Dados" Foreground="#000"/>
-        </StackPanel>
-
-        <StackPanel Orientation="Horizontal" Spacing="10">
-          <TextBox x:Name="txtUsuario" Width="300" Watermark="Usuário" Foreground="#000"/>
-        </StackPanel>
-
-        <StackPanel Orientation="Horizontal" Spacing="10">
-          <TextBox x:Name="txtSenha" Width="300" Watermark="Senha" AcceptsReturn="False" PasswordChar="*" Foreground="#000"/>
-        </StackPanel>
-      </StackPanel>
-
-      <StackPanel Orientation="Horizontal"
-            HorizontalAlignment="Center"
-            Spacing="20"
-            Margin="0,10,0,0">
-
-        <!-- Botão de Testar Conexão com Ícone -->
-        <Button Click="BtnLimpar_Click"
-         Background="Transparent"
-         BorderThickness="0"
-         Width="40" Height="40"
-         ToolTip.Tip="Limpar">
-          <Image Source="avares://BlackSync/Assets/Icons/eraser.png"
-                 Width="30" Height="30"/>
-        </Button>
-
-        <Button Click="BtnTestarConexao_Click"
-          Background="Transparent"
-          BorderThickness="0"
-          Width="40" Height="40"
-          ToolTip.Tip="Testar Conexão">
-          <Image Source="avares://BlackSync/Assets/Icons/unplug.png"
-                 Width="30" Height="30"/>
-        </Button>
-
-        <Button Click="BtnSalvar_Click"
-          Background="Transparent"
-          BorderThickness="0"
-          Width="40" Height="40"
-          ToolTip.Tip="Salvar">
-          <Image Source="avares://BlackSync/Assets/Icons/download.png"
-                 Width="30" Height="30"/>
-        </Button>
-      </StackPanel>
-
-    </StackPanel>
-  </ScrollViewer>
+    </ScrollViewer>
+  </Grid>
 </UserControl>
