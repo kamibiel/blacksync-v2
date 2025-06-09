@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BlackSync.Views.EmpresaView">
+
+  <Grid Margin="20">
+    <ScrollViewer>
+      <StackPanel
+          Margin="20"
+          Spacing="20"
+          HorizontalAlignment="Center">
+        <TextBlock Text="Configuração"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"/>
+
+        <!-- Empresa -->
+        <StackPanel Spacing="10">
+          <TextBlock Text="Configuração da empresa"
+                     FontSize="16" FontWeight="Bold"/>
+
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBox x:Name="txtEmpresaAntiga" Width="300" Padding="10" Watermark="Empresa antiga" Foreground="#000"/>
+            <TextBox x:Name="txtEmpresaNova" Width="300" Padding="10" Watermark="Empresa nova" Foreground="#000"/>
+          </StackPanel>
+        </StackPanel>
+
+        <!-- Filial -->
+        <StackPanel Spacing="10">
+          <TextBlock Text="Configuração da Filial"
+                     FontSize="16" FontWeight="Bold"/>
+
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBox x:Name="txtFilial" Width="300" Watermark="Filial" Foreground="#000"/>
+          </StackPanel>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal"
+              HorizontalAlignment="Center"
+              Spacing="10"
+              Margin="0,10,0,0">
+
+          <!-- Botão de Testar Conexão com Ícone -->
+          <Button x:Name="btnLimpar" Content="Limpar" Width="150" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+          <Button x:Name="btnSalvar" Content="Salvar" Width="150" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        </StackPanel>
+
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

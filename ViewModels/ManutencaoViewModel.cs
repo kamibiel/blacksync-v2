@@ -1,15 +1,30 @@
-﻿using ReactiveUI;
-using System;
-
-public class ManutencaoViewModel : ReactiveObject
+﻿namespace BlackSync.ViewModels
 {
-    private DateTime _de;
+    using Avalonia.Controls;
+    using Avalonia.Controls.ApplicationLifetimes;
+    using Material.Dialog;
+    using ReactiveUI;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
 
-    public DateTime De
+    public class ManutencaoViewModel : ReactiveObject
     {
-        get => _de;
-        set => this.RaiseAndSetIfChanged(ref _de, value);
-    }
+        public List<string> BancoDeDados { get; } = new List<string>
+        {
+            "Ambos",
+            "Firebird",
+            "MySQL"
+        };
 
-    public string DeFormatted => _de.ToString("dd/MM/yyyy");
+        public List<string> Comparacoes { get; } = new List<string>
+        {
+            ">",
+            "<",
+            "<=",
+            ">=",
+            "=",
+            "between"
+        };
+    }
 }

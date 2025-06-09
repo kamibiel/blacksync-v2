@@ -19,7 +19,7 @@
                      FontSize="16" FontWeight="Bold"/>
 
           <StackPanel Orientation="Horizontal" Spacing="10">
-            <TextBox x:Name="txtDSN" Width="300" Watermark="DSN" Foreground="#000"/>
+            <TextBox x:Name="txtDSN" Width="300" Padding="10" Watermark="DSN" Foreground="#000"/>
           </StackPanel>
         </StackPanel>
 
@@ -47,36 +47,13 @@
 
         <StackPanel Orientation="Horizontal"
               HorizontalAlignment="Center"
-              Spacing="20"
+              Spacing="10"
               Margin="0,10,0,0">
 
           <!-- Botão de Testar Conexão com Ícone -->
-          <Button Click="BtnLimpar_Click"
-           Background="Transparent"
-           BorderThickness="0"
-           Width="40" Height="40"
-           ToolTip.Tip="Limpar">
-            <Image Source="avares://BlackSync/Assets/Icons/eraser.png"
-                   Width="30" Height="30"/>
-          </Button>
-
-          <Button Click="BtnTestarConexao_Click"
-            Background="Transparent"
-            BorderThickness="0"
-            Width="40" Height="40"
-            ToolTip.Tip="Testar Conexão">
-            <Image Source="avares://BlackSync/Assets/Icons/unplug.png"
-                   Width="30" Height="30"/>
-          </Button>
-
-          <Button Click="BtnSalvar_Click"
-            Background="Transparent"
-            BorderThickness="0"
-            Width="40" Height="40"
-            ToolTip.Tip="Salvar">
-            <Image Source="avares://BlackSync/Assets/Icons/download.png"
-                   Width="30" Height="30"/>
-          </Button>
+          <Button Click="BtnLimpar_Click" Content="Limpar" Width="150" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+          <Button Click="BtnTestarConexao_Click" Content="Teste conexão" Width="150" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+          <Button Click="BtnSalvar_Click" Content="Salvar" Width="150" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
         </StackPanel>
 
       </StackPanel>

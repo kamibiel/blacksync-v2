@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BlackSync.Views"
         x:Class="BlackSync.Views.MainWindow"
-        Width="900" Height="750"        
+        Width="900" Height="850"        
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="-1"
@@ -30,7 +30,6 @@
                        VerticalAlignment="Center"/>
           </StackPanel>
         </Border>
-
 
         <!-- Menu Scrollável -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">

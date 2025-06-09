@@ -44,6 +44,19 @@ namespace BlackSync.Services
             await SalvarArquivo(janela, linhas);
         }
 
+        public static async Task SalvarConfiguracaoEmpresa(Window janela, string empresaAntiga, string empresaNova, string filial)
+        {
+            string[] linhas =
+            {
+                "[Empresa]",
+                $"EmpresaAntiga={empresaAntiga}",
+                $"EmpresaNova={empresaNova}",
+                $"Filial={filial}",
+            };
+
+            await SalvarArquivo(janela, linhas);
+        }
+
         public static async Task SalvarArquivo(Window janela, string[] novasLinhas, bool exibirMensagem = false)
         {
             try
@@ -51,8 +64,8 @@ namespace BlackSync.Services
                 // Se o arquivo já existe, carregamos as linhas atuais para preservá-las
                 List<string> linhas = File.Exists(configFilePath) ? File.ReadAllLines(configFilePath).ToList() : new List<string>();
 
-                // Identifica a seção atual que está sendo salva (MySQL ou Firebird)
-                string secaoAtual = novasLinhas[0]; // Exemplo: "[MySQL]" ou "[Firebird]"
+                // Identifica a seção atual que está sendo salva (MySQL, Firebird ou Empresa)
+                string secaoAtual = novasLinhas[0]; // Exemplo: "[MySQL]", "[Firebird]" ou "[Empresa]"
                 int indiceSecao = linhas.FindIndex(l => l == secaoAtual);
 
                 if (indiceSecao != -1)
@@ -137,5 +150,36 @@ namespace BlackSync.Services
 
             return (servidor, banco, usuario, senha);
         }
+    
+        public static (string empresaAntiga, string empresaNova, string filial) CarregarConfiguracaoEmpresa()
+        {
+            if (!File.Exists(configFilePath))
+                return ("", "", "");
+
+            string empresaAntiga = "", empresaNova = "", filial = "";
+            bool lendoEmpresa = false;
+
+            foreach (string linha in File.ReadAllLines(configFilePath))
+            {
+                if (linha.StartsWith("[Empresa]")) lendoEmpresa = true;
+                else if (linha.StartsWith("[")) lendoEmpresa = false;
+
+                if (!lendoEmpresa || linha.StartsWith("[")) continue;
+
+                var partes = linha.Split('=');
+                if (partes.Length < 2) continue;
+
+                switch (partes[0])
+                {
+                    case "EmpresaAntiga": empresaAntiga = partes[1]; break;
+                    case "EmpresaNova": empresaNova = partes[1]; break;
+                    case "Filial": filial = partes[1]; break;
+                }
+            }
+
+            return (empresaAntiga, empresaNova, filial);
+
+        }
+
     }
 }

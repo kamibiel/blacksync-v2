@@ -42,11 +42,6 @@ namespace BlackSync.Views
                             LogService.RegistrarLog("INFO", "Acesso à tela de Manutenção.");
                             break;
 
-                        case "Configuração":
-                            MainContent.Content = new ConfiguracaoView();
-                            LogService.RegistrarLog("INFO", "Acesso à tela de Configurações.");
-                            break;
-
                         case "Logs":
                             MainContent.Content = new LogsView();
                             LogService.RegistrarLog("INFO", "Acesso à tela de Logs.");
@@ -78,14 +73,14 @@ namespace BlackSync.Views
 
                 switch (subItemName)
                 {
-                    case "Dados":
-                        MainContent.Content = new MigracaoView();
-                        LogService.RegistrarLog("INFO", "Acesso à tela de Migrar tabelas.");
+                    case "Conexão":
+                        MainContent.Content = new ConfiguracaoView();
+                        LogService.RegistrarLog("INFO", "Acesso à tela de configuração da conexão do banco de dados.");
                         break;
 
-                    case "Migração ZPL":
-                        MainContent.Content = new ZplMigracaoView();
-                        LogService.RegistrarLog("INFO", "Acesso à tela de Migração ZPL.");
+                    case "Empresa":
+                        MainContent.Content = new EmpresaView();
+                        LogService.RegistrarLog("INFO", "Acesso à tela de configuração da empresa.");
                         break;
 
                     case "Outro Submenu":

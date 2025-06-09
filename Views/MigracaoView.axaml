@@ -38,9 +38,33 @@
 
       <!-- Botões -->
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-        <Button x:Name="btnMigrar" Content="Migrar tabelas" Width="130" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-        <Button x:Name="btnVerificarTabelas" Content="Verificar tabelas" Width="130" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        <Button x:Name="btnMigrar" Content="Migrar tabelas" Width="150" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        <Button x:Name="btnVerificarTabelas" Content="Verificar tabelas" Width="150" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
         <Button x:Name="btnVerificarEstrutura" Content="Verificar estrutura" Width="150" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+      </StackPanel>
+
+      <!-- Migração da ZPL -->
+      <StackPanel Orientation="Vertical" Margin="0,5,0,5">
+        <TextBlock Text="📦 Migrar ZPL" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+        <StackPanel Orientation="Horizontal" Spacing="20">
+          <TextBox x:Name="txtCaminhoArquivoAccess"
+                   Width="350"/>
+
+          <Button x:Name="btnSelecionar"
+        Width="25" Height="25"
+        ToolTip.Tip="Selecionar"
+        Background="Transparent"
+        BorderThickness="0"
+        Padding="0"
+                  Classes="flat">
+            <Image Source="avares://BlackSync/Assets/Icons/search.png"
+                   Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Center" Spacing="10">
+          <Button x:Name="btnLimpar" Content="Limpar" Width="150" HorizontalContentAlignment="Center"/>
+          <Button x:Name="btnImportarZPL" Content="Importar" Width="150" HorizontalContentAlignment="Center"/>
+        </StackPanel>
       </StackPanel>
 
       <!-- Log -->

@@ -1,12 +1,14 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
              x:Class="BlackSync.App"
-             xmlns:local="clr-namespace:BlackSync"
-             RequestedThemeVariant="Light">
+             xmlns:local="clr-namespace:BlackSync">
+  
 
   <Application.Styles>
-    <FluentTheme />
-    <StyleInclude Source="avares://BlackSync/Styles/GlobalStyles.axaml"/>
+    <!--<FluentTheme />-->
+    <themes:MaterialTheme BaseTheme="Light" PrimaryColor="Purple" SecondaryColor="Amber" />
+    <!--<StyleInclude Source="avares://BlackSync/Styles/GlobalStyles.axaml"/>-->
   </Application.Styles>
 
   <Application.Resources>

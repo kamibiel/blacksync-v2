@@ -11,16 +11,19 @@ namespace BlackSync.ViewModels
             MenuItems.Add(new MenuItemViewModel
             {
                 Title = "Migração",
-            //    SubItems = new ObservableCollection<string>
-            //{
-            //    "Dados",
-            //    "Estrutura",
-            //    "Migração ZPL"
-            //}
             });
 
             MenuItems.Add(new MenuItemViewModel { Title = "Manutenção" });
-            MenuItems.Add(new MenuItemViewModel { Title = "Configuração" });
+
+            MenuItems.Add(new MenuItemViewModel { 
+                Title = "Configuração",
+                SubItems = new ObservableCollection<string>
+                {
+                    "Conexão",
+                    "Empresa"
+                }
+            });
+
             MenuItems.Add(new MenuItemViewModel { Title = "Logs" });
             MenuItems.Add(new MenuItemViewModel { Title = "Sobre" });
         }
