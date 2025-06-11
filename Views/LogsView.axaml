@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BlackSync.Views.LogsView">
 
-  <ScrollViewer>
+  <ScrollViewer x:Name="scrollViewer">
     <StackPanel Margin="20" Spacing="10">
 
       <TextBlock Text="Logs do Sistema"

@@ -3,6 +3,7 @@ using Avalonia.Interactivity;
 using BlackSync.Services;
 using MsBox.Avalonia.Enums;
 using System;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace BlackSync.Views
 {
@@ -11,6 +12,8 @@ namespace BlackSync.Views
         public EmpresaView()
         {
             InitializeComponent();
+            CarregarConfiguracoesSalvas();
+
             this.FindControl<Button>("btnLimpar").Click += BtnLimpar_Click;
             this.FindControl<Button>("btnSalvar").Click += BtnSalvar_Click;
         }
@@ -18,7 +21,8 @@ namespace BlackSync.Views
         public void CarregarConfiguracoesSalvas()
         {
             var config = ConfigService.CarregarConfiguracaoEmpresa();
-            
+
+            txtRazao.Text = config.razao;
             txtEmpresaAntiga.Text = config.empresaAntiga;
             txtEmpresaNova.Text = config.empresaNova;
             txtFilial.Text = config.filial;
@@ -27,6 +31,7 @@ namespace BlackSync.Views
 
         private async void BtnLimpar_Click(object? sender, RoutedEventArgs e)
         {
+            txtRazao.Text = string.Empty;
             txtEmpresaAntiga.Text = string.Empty;
             txtEmpresaNova.Text = string.Empty;
             txtFilial.Text = string.Empty;
@@ -37,7 +42,8 @@ namespace BlackSync.Views
             var janela = (Window)this.VisualRoot;
 
             // Validação dos campos obrigatórios
-            if (string.IsNullOrWhiteSpace(txtEmpresaAntiga.Text) ||
+            if (string.IsNullOrWhiteSpace(txtRazao.Text) ||
+                string.IsNullOrWhiteSpace(txtEmpresaAntiga.Text) ||
                 string.IsNullOrWhiteSpace(txtEmpresaNova.Text) ||
                 string.IsNullOrWhiteSpace(txtFilial.Text))
             {
@@ -53,6 +59,7 @@ namespace BlackSync.Views
             {
                 await ConfigService.SalvarConfiguracaoEmpresa(
                     janela,
+                    txtRazao.Text,
                     txtEmpresaAntiga.Text,
                     txtEmpresaNova.Text,
                     txtFilial.Text);

@@ -19,6 +19,7 @@
 
         public List<string> Comparacoes { get; } = new List<string>
         {
+            "=",
             ">",
             "<",
             "<=",

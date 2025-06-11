@@ -44,11 +44,12 @@ namespace BlackSync.Services
             await SalvarArquivo(janela, linhas);
         }
 
-        public static async Task SalvarConfiguracaoEmpresa(Window janela, string empresaAntiga, string empresaNova, string filial)
+        public static async Task SalvarConfiguracaoEmpresa(Window janela,string razao, string empresaAntiga, string empresaNova, string filial)
         {
             string[] linhas =
             {
                 "[Empresa]",
+                $"Razao={razao}",
                 $"EmpresaAntiga={empresaAntiga}",
                 $"EmpresaNova={empresaNova}",
                 $"Filial={filial}",
@@ -151,12 +152,12 @@ namespace BlackSync.Services
             return (servidor, banco, usuario, senha);
         }
     
-        public static (string empresaAntiga, string empresaNova, string filial) CarregarConfiguracaoEmpresa()
+        public static (string razao, string empresaAntiga, string empresaNova, string filial) CarregarConfiguracaoEmpresa()
         {
             if (!File.Exists(configFilePath))
-                return ("", "", "");
+                return ("", "", "", "");
 
-            string empresaAntiga = "", empresaNova = "", filial = "";
+            string razao = "", empresaAntiga = "", empresaNova = "", filial = "";
             bool lendoEmpresa = false;
 
             foreach (string linha in File.ReadAllLines(configFilePath))
@@ -171,13 +172,14 @@ namespace BlackSync.Services
 
                 switch (partes[0])
                 {
+                    case "Razao": razao = partes[1]; break;
                     case "EmpresaAntiga": empresaAntiga = partes[1]; break;
                     case "EmpresaNova": empresaNova = partes[1]; break;
                     case "Filial": filial = partes[1]; break;
                 }
             }
 
-            return (empresaAntiga, empresaNova, filial);
+            return (razao, empresaAntiga, empresaNova, filial);
 
         }
 

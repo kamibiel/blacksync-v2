@@ -13,6 +13,15 @@
                    FontWeight="Bold"
                    HorizontalAlignment="Center"/>
 
+        <!-- Razão Social -->
+        <StackPanel Spacing="10">
+          <TextBlock Text="Configuração da Razão Social" FontSize="16" FontWeight="Bold"/>
+
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBox x:Name="txtRazao" Width="600" Padding="10" Watermark="Razão Social" Foreground="#000"/>
+          </StackPanel>
+        </StackPanel>
+        
         <!-- Empresa -->
         <StackPanel Spacing="10">
           <TextBlock Text="Configuração da empresa"

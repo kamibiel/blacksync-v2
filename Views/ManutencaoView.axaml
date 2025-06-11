@@ -40,9 +40,9 @@
 
         <!-- Categoria -->
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="20" Margin="20,0,0,0">
-          <CheckBox Content="Estoque"/>
-          <CheckBox Content="Financeiro"/>
-          <CheckBox Content="Vendas"/>
+          <CheckBox x:Name="cbEstoque" Content="Estoque"/>
+          <CheckBox x:Name="cbFinanceiro" Content="Financeiro"/>
+          <CheckBox x:Name="cbVendas" Content="Vendas"/>
         </StackPanel>
       </Grid>
 
@@ -62,16 +62,16 @@
 
         <!-- Títulos -->
         <TextBlock Grid.Row="0" Grid.Column="0" Text="Banco de dados" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
-        <TextBlock Grid.Row="0" Grid.Column="1" Text="Comparação" FontSize="16" FontWeight="Bold" Margin="20,0,0,5"/>
+        <TextBlock Grid.Row="0" Grid.Column="1" Text="Condição" FontSize="16" FontWeight="Bold" Margin="20,0,0,5"/>
 
         <!-- Banco de dados -->
         <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="10">
-          <ComboBox Width="150" ItemsSource="{Binding BancoDeDados}"/>
+          <ComboBox x:Name="cbBanco" Width="150" ItemsSource="{Binding BancoDeDados}"/>
         </StackPanel>
 
         <!-- Comparações -->
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="10">
-          <ComboBox Width="150" ItemsSource="{Binding Comparacoes}"/>
+          <ComboBox x:Name="cbComparacao" Width="150" ItemsSource="{Binding Comparacoes}"/>
         </StackPanel>
       </Grid>
 
@@ -90,9 +90,7 @@
           </StackPanel>
         </StackPanel>
       </StackPanel>
-
       
-
       <ProgressBar x:Name="pbProgresso" Height="20" Minimum="0" Maximum="100" IsVisible="False"/>
 
     </StackPanel>

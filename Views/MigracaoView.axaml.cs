@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -26,8 +27,8 @@ namespace BlackSync.Views;
 public partial class MigracaoView : UserControl
 {
     private string caminhoArquivoAccess = null!;
-    private readonly MySQLService _mysqlService;
-    private readonly FirebirdService _firebirdService;
+    private MySQLService _mysqlService;
+    private FirebirdService _firebirdService;
     private string _ultimaLetraDigitada = "";
     private DateTime _ultimaTeclaPressionada = DateTime.MinValue;
     private List<string> _tabelasMySQL = new List<string>();
@@ -37,10 +38,15 @@ public partial class MigracaoView : UserControl
     public MigracaoView()
     {
         InitializeComponent();
+        this.AttachedToVisualTree += OnViewLoaded;
 
         var lb = this.FindControl<ListBox>("lbTabelasFirebird");
-        lb.AddHandler(KeyDownEvent, ListBox_KeyDown, RoutingStrategies.Tunnel);
+        lb.AddHandler(KeyDownEvent, ListBox_KeyDown, RoutingStrategies.Tunnel);        
+    }
 
+    private async void OnViewLoaded(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        
         var window = this.GetVisualRoot() as Window;
 
         try
@@ -48,7 +54,6 @@ public partial class MigracaoView : UserControl
             var (servidor, banco, usuario, senha) = ConfigService.CarregarConfiguracaoMySQL();
             var dsn = ConfigService.CarregarConfiguracaoFirebird();
 
-            // Verifica se algo está vazio
             if (string.IsNullOrWhiteSpace(servidor) ||
                 string.IsNullOrWhiteSpace(banco) ||
                 string.IsNullOrWhiteSpace(usuario) ||
@@ -62,6 +67,15 @@ public partial class MigracaoView : UserControl
                         $"⚠️ Nenhuma configuração de banco encontrada.{Environment.NewLine}Por favor, configure antes de acessar a tela de Migração."
                     );
                 });
+
+                btnMigrar.IsEnabled = false;
+                btnVerificarTabelas.IsEnabled = false;
+                btnVerificarEstrutura.IsEnabled = false;
+                btnGerarScripts.IsEnabled = false;
+                btnGerarFeedback.IsEnabled = false;
+                btnImportarZPL.IsEnabled = false;
+                btnLimpar.IsEnabled = false;
+
                 return;
             }
 
@@ -73,6 +87,7 @@ public partial class MigracaoView : UserControl
             this.FindControl<Button>("btnVerificarEstrutura").Click += BtnVerificarEstrutura_Click;
             this.FindControl<Button>("btnGerarScripts").Click += BtnGerarScripts_Click;
             this.FindControl<Button>("btnGerarFeedback").Click += BtnGerarFeedback_Click;
+            this.FindControl<Button>("btnLimpar").Click += BtnLimpar_Click;
             this.FindControl<Button>("btnImportarZPL").Click += BtnImportarZPL_Click;
             this.FindControl<Button>("btnSelecionar").Click += BtnSelecionar_Click;
             this.FindControl<CheckBox>("cbMarcarTodas").Checked += CbMarcarTodas_Changed;
@@ -82,12 +97,9 @@ public partial class MigracaoView : UserControl
         }
         catch (Exception ex)
         {
-            _ = MessageService.MostrarMensagem(
-                window!,
+            await MessageService.MostrarDialogPersonalizado(window,
                 "Erro ao iniciar",
-                $"❌ Falha ao carregar a tela de migração:{Environment.NewLine}{ex.Message}",
-                MsBox.Avalonia.Enums.Icon.Error
-            );
+                $"❌ Falha ao carregar a tela de migração:{Environment.NewLine}{ex.Message}");
         }
     }
 
@@ -112,6 +124,17 @@ public partial class MigracaoView : UserControl
             lb.SelectedItem = item;
             lb.ScrollIntoView(item);
         }
+    }
+
+    private void SetarStatusBotoes(bool habilitar)
+    {
+        btnMigrar.IsEnabled = habilitar;
+        btnVerificarTabelas.IsEnabled = habilitar;
+        btnVerificarEstrutura.IsEnabled = habilitar;
+        btnGerarScripts.IsEnabled = habilitar;
+        btnGerarFeedback.IsEnabled = habilitar;
+        btnImportarZPL.IsEnabled = habilitar;
+        btnLimpar.IsEnabled = habilitar;
     }
 
     private async Task CarregarTabelasAsync()
@@ -283,11 +306,8 @@ public partial class MigracaoView : UserControl
         txtLog.Text += $"🔄 Iniciando migração de {tabelasSelecionadas.Count} tabelas...{Environment.NewLine}";
 
         pbMigracao.IsVisible = true;
-        btnMigrar.IsEnabled = false;
-        btnVerificarTabelas.IsEnabled = false;
-        btnVerificarEstrutura.IsEnabled = false;
-        btnGerarScripts.IsEnabled = false;
-        btnGerarFeedback.IsEnabled = false;
+
+        SetarStatusBotoes(false);
 
         int totalRegistros = await _firebirdService.ObterTotalRegistros(tabelasSelecionadas);
         pbMigracao.Maximum = Math.Max(1, totalRegistros);
@@ -405,16 +425,10 @@ public partial class MigracaoView : UserControl
         });
 
         pbMigracao.IsVisible = false;
-        btnMigrar.IsEnabled = true;
         txtLog.Text += $"🎉 Migração concluída!{Environment.NewLine}";
         pbMigracao.IsVisible = false;
 
-        btnMigrar.IsEnabled = true;
-        btnVerificarTabelas.IsEnabled = true;
-        btnVerificarEstrutura.IsEnabled = true;
-        btnGerarScripts.IsEnabled = true;
-        btnGerarScripts.IsEnabled = true;
-        btnGerarFeedback.IsEnabled = true;
+        SetarStatusBotoes(true);
     }
 
     private void BtnVerificarTabelas_Click(object? sender, RoutedEventArgs e)
@@ -451,11 +465,8 @@ public partial class MigracaoView : UserControl
         pbMigracao.Maximum = tabelasSelecionadas.Count;
 
         pbMigracao.IsVisible = true;
-        btnMigrar.IsEnabled = false;
-        btnVerificarTabelas.IsEnabled = false;
-        btnVerificarEstrutura.IsEnabled = false;
-        btnGerarScripts.IsEnabled = false;
-        btnGerarFeedback.IsEnabled = false;
+
+        SetarStatusBotoes(false);
 
         LogService.RegistrarLog("INFO", $"📥 Limpando as tabelas com erro.");
         txtLog.Clear();
@@ -493,11 +504,8 @@ public partial class MigracaoView : UserControl
         : $"✅ Estrutura do MySQL compatível.{Environment.NewLine}";
 
         pbMigracao.IsVisible = false;
-        btnMigrar.IsEnabled = true;
-        btnVerificarTabelas.IsEnabled = true;
-        btnVerificarEstrutura.IsEnabled = true;
-        btnGerarScripts.IsEnabled = true;
-        btnGerarFeedback.IsEnabled = true;
+
+        SetarStatusBotoes(true);
     }
 
     private async void BtnVerificarEstrutura_Click(object? sender, RoutedEventArgs e)
@@ -552,6 +560,11 @@ public partial class MigracaoView : UserControl
         }
     }
 
+    private async void BtnLimpar_Click(object? sender, RoutedEventArgs e)
+    {
+        txtCaminhoArquivoAccess.Text = string.Empty;
+    }
+
     private (DataTable dtEtiqueta, DataTable dtModelos) LerTabelasAccess(string caminhoArquivo)
     {
         string connStr = $"Provider=Microsoft.Jet.OLEDB.4.0;Data Source={caminhoArquivo};";
@@ -598,6 +611,8 @@ public partial class MigracaoView : UserControl
 
         pbMigracao.Value = 0;
         pbMigracao.IsVisible = true;
+
+        SetarStatusBotoes(false);
 
         try
         {
@@ -674,10 +689,10 @@ public partial class MigracaoView : UserControl
         }
         finally
         {
-            btnSelecionar.IsEnabled = true;
-            btnLimpar.IsEnabled = true;
             pbMigracao.IsVisible = false;
             pbMigracao.Value = 0;
+
+            SetarStatusBotoes(true);
         }
     }
 
@@ -711,6 +726,8 @@ public partial class MigracaoView : UserControl
         pbMigracao.Value = 0;
         pbMigracao.Maximum = _tabelasParaCriar.Count + _tabelasComErro.Count;
 
+        SetarStatusBotoes(false);
+
         await Task.Run(async () =>
         {
             foreach (var tabela in _tabelasParaCriar)
@@ -733,19 +750,22 @@ public partial class MigracaoView : UserControl
 
         SalvarScript(scriptFinal);
         pbMigracao.IsVisible = false;
-        btnMigrar.IsEnabled = true;
-        btnVerificarTabelas.IsEnabled = true;
-        btnVerificarEstrutura.IsEnabled = true;
-        btnGerarScripts.IsEnabled = true;
-        btnGerarFeedback.IsEnabled = true;
+        
+        SetarStatusBotoes(true);
     }
 
     private async void BtnGerarFeedback_Click(object? sender, RoutedEventArgs e)
     {
         var window = this.GetVisualRoot() as Window;
 
+        LogService.RegistrarLog("INFO", "🔄 Iniciando a geração do Feedback.");
+
+        // Pega os valores da empresa/documento
+        var config = ConfigService.CarregarConfiguracaoEmpresa();
+        string xRazao = config.razao;
+
         // 1. Pergunta o nome do cliente
-        string nomeCliente = await MessageService.PerguntarNomeCliente(window);
+        string nomeCliente = config.razao;
         if (string.IsNullOrWhiteSpace(nomeCliente))
             return;
 
@@ -794,5 +814,6 @@ public partial class MigracaoView : UserControl
             await MessageService.MostrarDialogPersonalizado(window, "Sucesso", "Feedback gerado com sucesso!");
         }
     }
+    
 }
 

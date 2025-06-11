@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Odbc; 
+using System.Data.Odbc;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -81,8 +81,8 @@ namespace BlackSync.Services
             {
                 MessageService.MostrarMensagem(
                         janela,
-                    $"Erro ao obter tabelas do MySQL: {ex.Message}", 
-                    "Erro", 
+                    $"Erro ao obter tabelas do MySQL: {ex.Message}",
+                    "Erro",
                     Icon.Error
                 );
             }
@@ -152,8 +152,8 @@ namespace BlackSync.Services
             {
                 MessageService.MostrarMensagem(
                         janela,
-                    $"Erro ao executar script no MySQL: {ex.Message}", 
-                    "Erro", 
+                    $"Erro ao executar script no MySQL: {ex.Message}",
+                    "Erro",
                     Icon.Error
                 );
             }
@@ -181,8 +181,8 @@ namespace BlackSync.Services
             {
                 MessageService.MostrarMensagem(
                         janela,
-                    $"Erro ao verificar dados na tabela {tabela}: {ex.Message}", 
-                    "Erro", 
+                    $"Erro ao verificar dados na tabela {tabela}: {ex.Message}",
+                    "Erro",
                     Icon.Error
                 );
                 return false; // Se der erro, assume que a tabela está vazia para evitar problemas.
@@ -210,8 +210,8 @@ namespace BlackSync.Services
             {
                 MessageService.MostrarMensagem(
                         janela,
-                    $"Erro ao truncar a tabela {tabela}: {ex.Message}", 
-                    "Erro", 
+                    $"Erro ao truncar a tabela {tabela}: {ex.Message}",
+                    "Erro",
                     Icon.Error
                 );
             }
@@ -244,8 +244,8 @@ namespace BlackSync.Services
             {
                 MessageService.MostrarMensagem(
                         janela,
-                    $"Erro ao obter dados da tabela {tabela} no Firebird: {ex.Message}", 
-                    "Erro", 
+                    $"Erro ao obter dados da tabela {tabela} no Firebird: {ex.Message}",
+                    "Erro",
                     Icon.Error
                 );
             }
@@ -280,8 +280,8 @@ namespace BlackSync.Services
             {
                 MessageService.MostrarMensagem(
                         janela,
-                    $"Erro ao obter colunas da tabela {tabela}: {ex.Message}", 
-                    "Erro", 
+                    $"Erro ao obter colunas da tabela {tabela}: {ex.Message}",
+                    "Erro",
                     Icon.Error
                 );
             }
@@ -314,8 +314,8 @@ namespace BlackSync.Services
             {
                 MessageService.MostrarMensagem(
                         janela,
-                    $"Erro ao obter códigos existentes da tabela {tabela}: {ex.Message}", 
-                    "Erro", 
+                    $"Erro ao obter códigos existentes da tabela {tabela}: {ex.Message}",
+                    "Erro",
                     Icon.Error
                 );
             }
@@ -358,7 +358,7 @@ namespace BlackSync.Services
 
             return colunasIgnorar;
         }
-        
+
         public async Task InserirDadosTabela(Window janela, string tabela, DataTable dados)
         {
             try
@@ -366,7 +366,7 @@ namespace BlackSync.Services
                 if (dados.Rows.Count == 0)
                 {
                     LogService.RegistrarLog(
-                        "INFO", 
+                        "INFO",
                         $"⚠️ Nenhum dado para inserir na tabela {tabela}."
                     );
 
@@ -376,22 +376,23 @@ namespace BlackSync.Services
                 using (var conn = new MySqlConnection(connectionString))
                 {
                     conn.Open();
-                    
+
                     LogService.RegistrarLog(
-                        "INFO", 
+                        "INFO",
                         $"✅ Iniciando inserção de {dados.Rows.Count} registros na tabela {tabela} no MySQL."
                     );
 
                     string tabelaMySQL = tabela.ToLower();
                     var estruturaTabela = await ObterEstruturaTabela(tabelaMySQL);
-                    
+
                     var colunasIgnorar = ObterColunasAutoIncrementPK(tabelaMySQL);
                     LogService.RegistrarLog("INFO", $"🔎 Ignorando colunas AUTO_INCREMENT/PK na tabela {tabela}: {string.Join(", ", colunasIgnorar)}");
 
                     var colunasMySQL = estruturaTabela.Select(c => c.Nome.ToLower()).ToList();
                     var colunasFirebird = dados.Columns.Cast<DataColumn>().Select(c => c.ColumnName.ToLower()).ToList();
 
-                    /*var colunasValidas = colunasFirebird.Intersect(colunasMySQL).ToList()*/;
+                    /*var colunasValidas = colunasFirebird.Intersect(colunasMySQL).ToList()*/
+                    ;
                     var colunasValidas = colunasFirebird
                         .Intersect(colunasMySQL)
                         .Except(colunasIgnorar)
@@ -603,18 +604,21 @@ namespace BlackSync.Services
                 MessageService.MostrarMensagem(
                         janela,
                     $"Erro ao atualizar coluna 'Enviado' na tabela {tabela} no MySQL: {ex.Message}",
-                    "Erro", 
+                    "Erro",
                     Icon.Error
                 );
             }
         }
 
-        public void ReabrirMovimentoMySQL(string tabela, DateTime dataInicio, DateTime dataFim)
+        public void ReabrirMovimentoMySQL(string tabela, string operador, DateTime dataInicio, DateTime? dataFim = null)
         {
             try
             {
                 using (var conn = new MySqlConnection(connectionString))
                 {
+                    var config = ConfigService.CarregarConfiguracaoEmpresa();
+                    string filial = config.filial;
+
                     conn.Open();
 
                     string colunaData = tabela switch
@@ -638,38 +642,37 @@ namespace BlackSync.Services
                     // Tratamento para tabelas que usam IN (SELECT ...)
                     if (tabela == "itensnf")
                     {
-                        query = $@"
-                        UPDATE {tabela}
-                        SET enviado = '0'
-                        WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN @DataInicio AND @DataFim)";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE nf IN (
+                              SELECT nf FROM notafiscal WHERE dtemissao BETWEEN @DataInicio AND @DataFim and filial = ?)"
+                                            : $@"UPDATE {tabela} SET enviado = '0' WHERE nf IN (
+                              SELECT nf FROM notafiscal WHERE dtemissao {operador} @DataInicio and filial = ?)";
                     }
                     else if (tabela == "itenspedidovenda")
                     {
-                        query = $@"
-                        UPDATE {tabela}
-                        SET enviado = '0'
-                        WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN @DataInicio AND @DataFim)";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
+                              SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? and filial = ?)"
+                                            : $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
+                              SELECT documento FROM pedidosvenda WHERE data {operador} @DataInicio and filial = ?)";
                     }
                     else if (tabela == "itemnfentrada")
                     {
-                        query = $@"
-                        UPDATE {tabela}
-                        SET enviado = '0'
-                        WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN @DataInicio AND @DataFim)";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
+                              SELECT documento FROM nfentrada WHERE dtlanca BETWEEN @DataInicio AND @DataFim and filial = ?)"
+                                            : $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
+                              SELECT documento FROM nfentrada WHERE dtlanca {operador} @DataInicio and filial = ?)";
                     }
                     else if (colunaData != null)
                     {
-                        query = $@"
-                        UPDATE {tabela}
-                        SET enviado = '0'
-                        WHERE {colunaData} BETWEEN @DataInicio AND @DataFim";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE {colunaData} BETWEEN ? AND ? and filial = ?"
+                            : $@"UPDATE {tabela} SET enviado = '0' WHERE {colunaData} {operador} @DataInicio and filial = ?";
                     }
                     else
                     {
-                        LogService.RegistrarLog(
-                            "ERROR",
-                            $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida."
-                        );
+                        LogService.RegistrarLog("ERROR", $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida.");
 
                         return;
                     }
@@ -677,94 +680,9 @@ namespace BlackSync.Services
                     using (var cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@DataInicio", dataInicio.Date);
-                        cmd.Parameters.AddWithValue("@DataFim", dataFim.Date);
-                        int linhasAfetadas = cmd.ExecuteNonQuery();
-
-                        LogService.RegistrarLog(
-                            "INFO", 
-                            $"🔄 {linhasAfetadas} registros reabertos na tabela {tabela} (MySQL)."
-                        );
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogService.RegistrarLog(
-                    "ERROR", 
-                    $"❌ Erro ao reabrir movimento na tabela {tabela} (MySQL): {ex.Message}"
-                );
-            }
-        }
-
-        public void FecharMovimentoMySQL(string tabela, DateTime dataInicio, DateTime dataFim)
-        {
-            try
-            {
-                using (var conn = new MySqlConnection(connectionString))
-                {
-                    conn.Open();
-
-                    string colunaData = tabela switch
-                    {
-                        "baixapagar" => "dtlanca",
-                        "baixareceber" => "dtlanca",
-                        "contacartao" => "datavenda",
-                        "pagar" => "dtlanca",
-                        "receber" => "dtlanca",
-                        "abrecaixa" => "dataabre",
-                        "caixa" => "data",
-                        "notafiscal" => "dtemissao",
-                        "pedidosvenda" => "data",
-                        "movestoque" => "data",
-                        "nfentrada" => "dtlanca",
-                        _ => null
-                    };
-
-                    string query;
-
-                    // Tratamento para tabelas que usam IN (SELECT ...)
-                    if (tabela == "itensnf")
-                    {
-                        query = $@"
-                        UPDATE {tabela}
-                        SET enviado = '1'
-                        WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN @DataInicio AND @DataFim)";
-                    }
-                    else if (tabela == "itenspedidovenda")
-                    {
-                        query = $@"
-                        UPDATE {tabela}
-                        SET enviado = '1'
-                        WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN @DataInicio AND @DataFim)";
-                    }
-                    else if (tabela == "itemnfentrada")
-                    {
-                        query = $@"
-                        UPDATE {tabela}
-                        SET enviado = '1'
-                        WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN @DataInicio AND @DataFim)";
-                    }
-                    else if (colunaData != null)
-                    {
-                        query = $@"
-                        UPDATE {tabela}
-                        SET enviado = '1'
-                        WHERE {colunaData} BETWEEN @DataInicio AND @DataFim";
-                    }
-                    else
-                    {
-                        LogService.RegistrarLog(
-                            "ERROR",
-                            $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida."
-                        );
-
-                        return;
-                    }
-
-                    using (var cmd = new MySqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@DataInicio", dataInicio.Date);
-                        cmd.Parameters.AddWithValue("@DataFim", dataFim.Date);
+                        if (operador == "between" && dataFim.HasValue)
+                            cmd.Parameters.AddWithValue("@DataFim", dataFim.Value.Date);
+                        cmd.Parameters.AddWithValue("?", filial);
                         int linhasAfetadas = cmd.ExecuteNonQuery();
 
                         LogService.RegistrarLog(
@@ -783,12 +701,15 @@ namespace BlackSync.Services
             }
         }
 
-        public void ExcluirMovimentoMySQL(string tabela, DateTime dataInicio, DateTime dataFim)
+        public void FecharMovimentoMySQL(string tabela, string operador, DateTime dataInicio, DateTime? dataFim = null)
         {
             try
             {
                 using (var conn = new MySqlConnection(connectionString))
                 {
+                    var config = ConfigService.CarregarConfiguracaoEmpresa();
+                    string filial = config.filial;
+
                     conn.Open();
 
                     string colunaData = tabela switch
@@ -812,27 +733,124 @@ namespace BlackSync.Services
                     // Tratamento para tabelas que usam IN (SELECT ...)
                     if (tabela == "itensnf")
                     {
-                        query = $@"
-                        delete from {tabela}
-                        WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN @DataInicio AND @DataFim)";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE nf IN (
+                              SELECT nf FROM notafiscal WHERE dtemissao BETWEEN @DataInicio AND @DataFim and filial = ?)"
+                                                                : $@"UPDATE {tabela} SET enviado = '1' WHERE nf IN (
+                              SELECT nf FROM notafiscal WHERE dtemissao {operador} @DataInicio and filial = ?)";
                     }
                     else if (tabela == "itenspedidovenda")
                     {
-                        query = $@"
-                        delete from {tabela}
-                        WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN @DataInicio AND @DataFim)";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
+                              SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? and filial = ?)"
+                                                                : $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
+                              SELECT documento FROM pedidosvenda WHERE data {operador} @DataInicio and filial = ?)";
                     }
                     else if (tabela == "itemnfentrada")
                     {
-                        query = $@"
-                        delete from {tabela}
-                        WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN @DataInicio AND @DataFim)";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
+                              SELECT documento FROM nfentrada WHERE dtlanca BETWEEN @DataInicio AND @DataFim and filial = ?)"
+                                                                : $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
+                              SELECT documento FROM nfentrada WHERE dtlanca {operador} @DataInicio and filial = ?)";
                     }
                     else if (colunaData != null)
                     {
-                        query = $@"
-                        delete from {tabela}
-                        WHERE {colunaData} BETWEEN @DataInicio AND @DataFim";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE {colunaData} BETWEEN ? AND ? and filial = ?"
+                            : $@"UPDATE {tabela} SET enviado = '1' WHERE {colunaData} {operador} @DataInicio and filial = ?";
+                    }
+                    else
+                    {
+                        LogService.RegistrarLog("ERROR", $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida.");
+
+                        return;
+                    }
+
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@DataInicio", dataInicio.Date);
+                        if (operador == "between" && dataFim.HasValue)
+                            cmd.Parameters.AddWithValue("@DataFim", dataFim.Value.Date);
+                        cmd.Parameters.AddWithValue("?", filial);
+                        int linhasAfetadas = cmd.ExecuteNonQuery();
+
+                        LogService.RegistrarLog(
+                            "INFO",
+                            $"🔄 {linhasAfetadas} registros reabertos na tabela {tabela} (MySQL)."
+                        );
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.RegistrarLog(
+                    "ERROR",
+                    $"❌ Erro ao reabrir movimento na tabela {tabela} (MySQL): {ex.Message}"
+                );
+            }
+        }
+
+        public void ExcluirMovimentoMySQL(string tabela, string operador, DateTime dataInicio, DateTime? dataFim = null)
+        {
+            try
+            {
+                using (var conn = new MySqlConnection(connectionString))
+                {
+                    var config = ConfigService.CarregarConfiguracaoEmpresa();
+                    string filial = config.filial;
+
+                    conn.Open();
+
+                    string colunaData = tabela switch
+                    {
+                        "baixapagar" => "dtlanca",
+                        "baixareceber" => "dtlanca",
+                        "contacartao" => "datavenda",
+                        "pagar" => "dtlanca",
+                        "receber" => "dtlanca",
+                        "abrecaixa" => "dataabre",
+                        "caixa" => "data",
+                        "notafiscal" => "dtemissao",
+                        "pedidosvenda" => "data",
+                        "movestoque" => "data",
+                        "nfentrada" => "dtlanca",
+                        _ => null
+                    };
+
+                    string query;
+
+                    // Tratamento para tabelas que usam IN (SELECT ...)
+                    if (tabela == "itensnf")
+                    {
+                        query = operador == "between"
+                            ? $@"DELETE from {tabela}
+                                WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN @DataInicio AND @DataFim and filial = ?)"
+                                                : $@"DELETE from {tabela}
+                                WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao {operador} ? and filial = ?)";
+                    }
+                    else if (tabela == "itenspedidovenda")
+                    {
+                        query = operador == "between"
+                            ? $@"DELETE from {tabela}
+                                WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN @DataInicio AND @DataFim and filial = ?)"
+                                                : $@"DELETE from {tabela}
+                                WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data {operador} ? and filial = ?)";
+                    }
+                    else if (tabela == "itemnfentrada")
+                    {
+                        query = operador == "between"
+                            ? $@"DELETE from {tabela}
+                                WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN @DataInicio AND @DataFim and filial = ?)"
+                                                : $@"DELETE from {tabela}
+                                WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca {operador} ? and filial = ?)";
+                    }
+                    else if (colunaData != null)
+                    {
+                        query = operador == "between"
+                            ? $@"DELETE from {tabela} WHERE {colunaData} BETWEEN @DataInicio AND @DataFim and filial = ?"
+                            : $@"DELETE from {tabela} WHERE {colunaData} {operador} ? and filial = ?";
                     }
                     else
                     {
@@ -847,7 +865,9 @@ namespace BlackSync.Services
                     using (var cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@DataInicio", dataInicio.Date);
-                        cmd.Parameters.AddWithValue("@DataFim", dataFim.Date);
+                        if (operador == "between" && dataFim.HasValue)
+                            cmd.Parameters.AddWithValue("@DataFim", dataFim.Value.Date);
+                        cmd.Parameters.AddWithValue("?", filial);
                         int linhasAfetadas = cmd.ExecuteNonQuery();
 
                         LogService.RegistrarLog(

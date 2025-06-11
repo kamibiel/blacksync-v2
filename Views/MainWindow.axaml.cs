@@ -34,22 +34,22 @@ namespace BlackSync.Views
                     {
                         case "Migração":
                             MainContent.Content = new MigracaoView();
-                            LogService.RegistrarLog("INFO", "Acesso à tela de Configurações.");
+                            LogService.RegistrarLog("INFO", "📌 Acesso à tela de Configurações.");
                             break;
 
                         case "Manutenção":
                             MainContent.Content = new ManutencaoView();
-                            LogService.RegistrarLog("INFO", "Acesso à tela de Manutenção.");
+                            LogService.RegistrarLog("INFO", "📌 Acesso à tela de Manutenção.");
                             break;
 
                         case "Logs":
                             MainContent.Content = new LogsView();
-                            LogService.RegistrarLog("INFO", "Acesso à tela de Logs.");
+                            LogService.RegistrarLog("INFO", "📌 Acesso à tela de Logs.");
                             break;
 
                         case "Sobre":
                             MainContent.Content = new SobreView();
-                            LogService.RegistrarLog("INFO", "Acesso à tela de Sobre.");
+                            LogService.RegistrarLog("INFO", "📌 Acesso à tela de Sobre.");
                             break;
 
                         default:
@@ -75,12 +75,12 @@ namespace BlackSync.Views
                 {
                     case "Conexão":
                         MainContent.Content = new ConfiguracaoView();
-                        LogService.RegistrarLog("INFO", "Acesso à tela de configuração da conexão do banco de dados.");
+                        LogService.RegistrarLog("INFO", "📌 Acesso à tela de configuração da conexão do banco de dados.");
                         break;
 
                     case "Empresa":
                         MainContent.Content = new EmpresaView();
-                        LogService.RegistrarLog("INFO", "Acesso à tela de configuração da empresa.");
+                        LogService.RegistrarLog("INFO", "📌 Acesso à tela de configuração da empresa.");
                         break;
 
                     case "Outro Submenu":
@@ -90,7 +90,7 @@ namespace BlackSync.Views
                             FontSize = 18,
                             Margin = new Thickness(10)
                         };
-                        LogService.RegistrarLog("INFO", "Acesso à tela de Outro Submenu.");
+                        LogService.RegistrarLog("INFO", "📌 Acesso à tela de Outro Submenu.");
                         break;
 
                     default:

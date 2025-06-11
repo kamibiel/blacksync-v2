@@ -1,8 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using System.Text;
+using Avalonia.VisualTree;
 using BlackSync.Services;
 using System;
+using System.Text;
 
 namespace BlackSync.Views;
 
@@ -47,6 +48,7 @@ public partial class LogsView : UserControl
         txtLogs.Text = sb.ToString();
 
         txtLogs.CaretIndex = txtLogs.Text?.Length ?? 0;
+        scrollViewer.Offset = new Avalonia.Vector(scrollViewer.Offset.X, scrollViewer.Extent.Height);
     }
 
     private void BtnAtualizar_Click(object? sender, RoutedEventArgs e)

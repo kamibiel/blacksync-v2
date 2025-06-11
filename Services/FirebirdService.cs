@@ -218,7 +218,6 @@ namespace BlackSync.Services
             return lotes; // Retorna todos os lotes como uma lista
         }
 
-
         public async Task<bool> ColunaExiste(Window janela, string tabela, string coluna)
         {
             bool existe = false;
@@ -322,12 +321,15 @@ namespace BlackSync.Services
             }
         }
 
-        public void ReabrirMovimentoFirebird(string tabela, DateTime dataInicio, DateTime dataFim)
+        public void ReabrirMovimentoFirebird(string tabela, string operador, DateTime dataInicio, DateTime? dataFim = null)
         {
             try
             {
                 using (var conn = new OdbcConnection(connectionString))
                 {
+                    var config = ConfigService.CarregarConfiguracaoEmpresa();
+                    string filial = config.filial;
+
                     conn.Open();
 
                     string colunaData = tabela switch
@@ -351,38 +353,37 @@ namespace BlackSync.Services
                     // Tratamento para tabelas que usam IN (SELECT ...)
                     if (tabela == "itensnf")
                     {
-                        query = $@"
-                        UPDATE {tabela}
-                        SET enviado = '0'
-                        WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ?)";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE nf IN (
+                                  SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ?  and filial = ?)"
+                            : $@"UPDATE {tabela} SET enviado = '0' WHERE nf IN (
+                                  SELECT nf FROM notafiscal WHERE dtemissao {operador} ? and filial = ?)";
                     }
                     else if (tabela == "itenspedidovenda")
                     {
-                        query = $@"
-                        UPDATE {tabela}
-                        SET enviado = '0'
-                        WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ?)";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
+                                  SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? and filial = ?)"
+                            : $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
+                                  SELECT documento FROM pedidosvenda WHERE data {operador} ? and filial = ?)";
                     }
                     else if (tabela == "itemnfentrada")
                     {
-                        query = $@"
-                        UPDATE {tabela}
-                        SET enviado = '0'
-                        WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ?)";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
+                                  SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ?  and filial = ?)"
+                            : $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
+                                  SELECT documento FROM nfentrada WHERE dtlanca {operador} ? and filial = ?)";
                     }
                     else if (colunaData != null)
                     {
-                        query = $@"
-                        UPDATE {tabela}
-                        SET enviado = '0'
-                        WHERE {colunaData} BETWEEN ? AND ?";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE {colunaData} BETWEEN ? AND ? and filial = ?"
+                            : $@"UPDATE {tabela} SET enviado = '0' WHERE {colunaData} {operador} ? and filial = ?";
                     }
                     else
                     {
-                        LogService.RegistrarLog(
-                            "ERROR", 
-                            $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida."
-                        );
+                        LogService.RegistrarLog("ERROR", $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida.");
 
                         return;
                     }
@@ -390,13 +391,12 @@ namespace BlackSync.Services
                     using (var cmd = new OdbcCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("?", dataInicio.Date);
-                        cmd.Parameters.AddWithValue("?", dataFim.Date);
+                        if (operador == "between" && dataFim.HasValue)
+                            cmd.Parameters.AddWithValue("?", dataFim.Value.Date);
+                        cmd.Parameters.AddWithValue("?", filial);
 
                         int linhasAfetadas = cmd.ExecuteNonQuery();
-                        LogService.RegistrarLog(
-                            "INFO", 
-                            $"🔄 {linhasAfetadas} registros reabertos na tabela {tabela} (Firebird)."
-                        );
+                        LogService.RegistrarLog("INFO", $"🔄 {linhasAfetadas} registros reabertos na tabela {tabela} (Firebird).");
                     }
                 }
             }
@@ -406,12 +406,15 @@ namespace BlackSync.Services
             }
         }
 
-        public void FecharMovimentoFirebird(string tabela, DateTime dataInicio, DateTime dataFim)
+        public void FecharMovimentoFirebird(string tabela, string operador, DateTime dataInicio, DateTime? dataFim = null)
         {
             try
             {
                 using (var conn = new OdbcConnection(connectionString))
                 {
+                    var config = ConfigService.CarregarConfiguracaoEmpresa();
+                    string filial = config.filial;
+
                     conn.Open();
 
                     string colunaData = tabela switch
@@ -435,38 +438,37 @@ namespace BlackSync.Services
                     // Tratamento para tabelas que usam IN (SELECT ...)
                     if (tabela == "itensnf")
                     {
-                        query = $@"
-                UPDATE {tabela}
-                SET enviado = '1'
-                WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ?)";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE nf IN (
+                          SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ?  and filial = ?)"
+                            : $@"UPDATE {tabela} SET enviado = '1' WHERE nf IN (
+                          SELECT nf FROM notafiscal WHERE dtemissao {operador} ? and filial = ?)";
                     }
                     else if (tabela == "itenspedidovenda")
                     {
-                        query = $@"
-                UPDATE {tabela}
-                SET enviado = '1'
-                WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ?)";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
+                          SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? and filial = ?)"
+                            : $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
+                          SELECT documento FROM pedidosvenda WHERE data {operador} ? and filial = ?)";
                     }
                     else if (tabela == "itemnfentrada")
                     {
-                        query = $@"
-                UPDATE {tabela}
-                SET enviado = '1'
-                WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ?)";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
+                          SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ?  and filial = ?)"
+                            : $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
+                          SELECT documento FROM nfentrada WHERE dtlanca {operador} ? and filial = ?)";
                     }
                     else if (colunaData != null)
                     {
-                        query = $@"
-                UPDATE {tabela}
-                SET enviado = '1'
-                WHERE {colunaData} BETWEEN ? AND ?";
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE {colunaData} BETWEEN ? AND ? and filial = ?"
+                            : $@"UPDATE {tabela} SET enviado = '1' WHERE {colunaData} {operador} ? and filial = ?";
                     }
                     else
                     {
-                        LogService.RegistrarLog(
-                            "ERROR",
-                            $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida."
-                        );
+                        LogService.RegistrarLog("ERROR", $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida.");
 
                         return;
                     }
@@ -474,13 +476,12 @@ namespace BlackSync.Services
                     using (var cmd = new OdbcCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("?", dataInicio.Date);
-                        cmd.Parameters.AddWithValue("?", dataFim.Date);
+                        if (operador == "between" && dataFim.HasValue)
+                            cmd.Parameters.AddWithValue("?", dataFim.Value.Date);
+                        cmd.Parameters.AddWithValue("?", filial);
 
                         int linhasAfetadas = cmd.ExecuteNonQuery();
-                        LogService.RegistrarLog(
-                            "INFO",
-                            $"🔄 {linhasAfetadas} registros reabertos na tabela {tabela} (Firebird)."
-                        );
+                        LogService.RegistrarLog("INFO", $"🔄 {linhasAfetadas} registros reabertos na tabela {tabela} (Firebird).");
                     }
                 }
             }
@@ -490,12 +491,15 @@ namespace BlackSync.Services
             }
         }
 
-        public void ExcluirMovimentoFirebird(string tabela, DateTime dataInicio, DateTime dataFim)
+        public void ExcluirMovimentoFirebird(string tabela, string operador, DateTime dataInicio, DateTime? dataFim = null)
         {
             try
             {
                 using (var conn = new OdbcConnection(connectionString))
                 {
+                    var config = ConfigService.CarregarConfiguracaoEmpresa();
+                    string filial = config.filial;
+
                     conn.Open();
 
                     string colunaData = tabela switch
@@ -519,27 +523,33 @@ namespace BlackSync.Services
                     // Tratamento para tabelas que usam IN (SELECT ...)
                     if (tabela == "itensnf")
                     {
-                        query = $@"
-                        delete from {tabela}
-                        WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ?)";
+                        query = operador == "between" 
+                            ? $@"DELETE from {tabela}
+                                WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ? and filial = ?)"
+                            : $@"DELETE from {tabela}
+                                WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao {operador} ? and filial = ?)";
                     }
                     else if (tabela == "itenspedidovenda")
                     {
-                        query = $@"
-                        delete from {tabela}
-                        WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ?)";
+                        query = operador == "between"
+                            ? $@"DELETE from {tabela}
+                                WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? and filial = ?)"
+                            : $@"DELETE from {tabela}
+                                WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data {operador} ? and filial = ?)";
                     }
                     else if (tabela == "itemnfentrada")
                     {
-                        query = $@"
-                        delete from {tabela}
-                        WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ?)";
+                        query = operador == "between"
+                            ? $@"DELETE from {tabela}
+                                WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ? and filial = ?)"
+                            : $@"DELETE from {tabela}
+                                WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca {operador} ? and filial = ?)";
                     }
                     else if (colunaData != null)
                     {
-                        query = $@"
-                        delete from {tabela}
-                        WHERE {colunaData} BETWEEN ? AND ?";
+                        query = operador == "between"
+                            ? $@"DELETE from {tabela} WHERE {colunaData} BETWEEN ? AND ? and filial = ?"
+                            : $@"DELETE from {tabela} WHERE {colunaData} {operador} ? and filial = ?";
                     }
                     else
                     {
@@ -554,7 +564,9 @@ namespace BlackSync.Services
                     using (var cmd = new OdbcCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("?", dataInicio.Date);
-                        cmd.Parameters.AddWithValue("?", dataFim.Date);
+                        if (operador == "between" && dataFim.HasValue)
+                            cmd.Parameters.AddWithValue("?", dataFim.Value.Date);
+                        cmd.Parameters.AddWithValue("?", filial);
 
                         int linhasAfetadas = cmd.ExecuteNonQuery();
                         LogService.RegistrarLog(

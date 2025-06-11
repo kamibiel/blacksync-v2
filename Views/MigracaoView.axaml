@@ -76,7 +76,7 @@
         <TextBox x:Name="txtLog"
                  AcceptsReturn="True"
                  IsReadOnly="True"
-                 Height="150"
+                 Height="120"
                  Foreground="#000"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
       </StackPanel>
