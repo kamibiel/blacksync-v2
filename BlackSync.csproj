@@ -10,9 +10,9 @@
     <Platforms>AnyCPU;x86</Platforms>
 
     <!-- 🚀 Versão do Sistema -->
-    <ApplicationVersion>2.0.0</ApplicationVersion>
-    <AssemblyVersion>2.0.0.0</AssemblyVersion>
-    <FileVersion>2.0.0.0</FileVersion>
+    <ApplicationVersion>2.1.0.0</ApplicationVersion>
+    <AssemblyVersion>2.1.0.0</AssemblyVersion>
+    <FileVersion>2.1.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
