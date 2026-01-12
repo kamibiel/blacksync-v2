@@ -22,6 +22,15 @@
           </StackPanel>
         </StackPanel>
         
+        <!-- Diretório do banco de dados -->
+        <StackPanel Spacing="10">
+          <TextBlock Text="Configuração do diretório" FontSize="16" FontWeight="Bold"/>
+
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBox x:Name="txtDiretorio" Width="600" Padding="10" Watermark="Diretório" Foreground="#000"/>
+          </StackPanel>
+        </StackPanel>
+        
         <!-- Empresa -->
         <StackPanel Spacing="10">
           <TextBlock Text="Configuração da empresa"

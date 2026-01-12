@@ -27,6 +27,7 @@ namespace BlackSync.Views
             var firebird = ConfigService.CarregarConfiguracaoFirebird();
 
             txtServidor.Text = mysql.servidor;
+            txtPorta.Text = mysql.porta;
             txtBanco.Text = mysql.banco;
             txtUsuario.Text = mysql.usuario;
             txtSenha.Text = mysql.senha;
@@ -39,6 +40,7 @@ namespace BlackSync.Views
 
             // Validação básica dos campos
             if (string.IsNullOrWhiteSpace(txtServidor.Text) ||
+                string.IsNullOrWhiteSpace(txtPorta.Text) ||
                 string.IsNullOrWhiteSpace(txtBanco.Text) ||
                 string.IsNullOrWhiteSpace(txtUsuario.Text) ||
                 string.IsNullOrWhiteSpace(txtSenha.Text) ||
@@ -59,6 +61,7 @@ namespace BlackSync.Views
             {
                 var mysqlService = new MySQLService(
                     txtServidor.Text,
+                    txtPorta.Text,
                     txtBanco.Text,
                     txtUsuario.Text,
                     txtSenha.Text
@@ -99,6 +102,7 @@ namespace BlackSync.Views
 
             // Validação dos campos obrigatórios
             if (string.IsNullOrWhiteSpace(txtServidor.Text) ||
+                string.IsNullOrWhiteSpace(txtPorta.Text) ||
                 string.IsNullOrWhiteSpace(txtBanco.Text) ||
                 string.IsNullOrWhiteSpace(txtUsuario.Text) ||
                 string.IsNullOrWhiteSpace(txtSenha.Text) ||
@@ -117,6 +121,7 @@ namespace BlackSync.Views
                 await ConfigService.SalvarConfiguracaoMySQL(
                 janela,
                 txtServidor.Text,
+                txtPorta.Text,
                 txtBanco.Text,
                 txtUsuario.Text,
                 txtSenha.Text);
@@ -141,6 +146,7 @@ namespace BlackSync.Views
         private async void BtnLimpar_Click(object? sender, RoutedEventArgs e)
         {
             txtServidor.Text = string.Empty;
+            txtPorta.Text = string.Empty;
             txtBanco.Text = string.Empty;
             txtUsuario.Text = string.Empty;
             txtSenha.Text = string.Empty;

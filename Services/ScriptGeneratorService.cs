@@ -11,7 +11,7 @@ namespace BlackSync.Services
     public static class ScriptGeneratorService
     {
         // Método para gerar script de criação de tabela no MySQL
-        public static string GerarScriptMySQL(string tabela, string servidor, string banco, string usuario, string senha, string firebirdDSN)
+        public static string GerarScriptMySQL(string tabela, string servidor, string porta, string banco, string usuario, string senha, string firebirdDSN)
         {
             // Gerar o script baseado na estrutura do Firebird
             string scriptFirebird = GerarScriptFirebird(tabela, firebirdDSN);

@@ -33,6 +33,10 @@
           </StackPanel>
 
           <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBox x:Name="txtPorta" Width="300" Watermark="Porta" Foreground="#000"/>
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="10">
             <TextBox x:Name="txtBanco" Width="300" Watermark="Banco de Dados" Foreground="#000"/>
           </StackPanel>
 

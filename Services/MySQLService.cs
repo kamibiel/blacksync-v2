@@ -19,10 +19,10 @@ namespace BlackSync.Services
         private string connectionString;
         private string _banco;
 
-        public MySQLService(string servidor, string banco, string usuario, string senha)
+        public MySQLService(string servidor, string porta, string banco, string usuario, string senha)
         {
             _banco = banco;
-            connectionString = $"Server={servidor};Database={banco};User={usuario};Password={senha};";
+            connectionString = $"Server={servidor};Port={porta};Database={banco};User={usuario};Password={senha};";
         }
 
         public async Task<bool> TestarConexao(Window janela)

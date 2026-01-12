@@ -57,10 +57,11 @@ namespace BlackSync.Views
 
             try
             {
-                var (servidor, banco, usuario, senha) = ConfigService.CarregarConfiguracaoMySQL();
+                var (servidor, porta, banco, usuario, senha) = ConfigService.CarregarConfiguracaoMySQL();
                 var dsn = ConfigService.CarregarConfiguracaoFirebird();
 
                 if (string.IsNullOrWhiteSpace(servidor) ||
+                    string.IsNullOrWhiteSpace(porta) ||
                     string.IsNullOrWhiteSpace(banco) ||
                     string.IsNullOrWhiteSpace(usuario) ||
                     string.IsNullOrWhiteSpace(senha) ||
@@ -75,7 +76,7 @@ namespace BlackSync.Views
                     return;
                 }
 
-                _mysqlService = new MySQLService(servidor, banco, usuario, senha);
+                _mysqlService = new MySQLService(servidor, porta, banco, usuario, senha);
                 _firebirdService = new FirebirdService(dsn);
 
                 this.FindControl<Button>("btnReabrirDados").Click += BtnReabrirDados_Click;

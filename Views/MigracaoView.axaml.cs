@@ -18,6 +18,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.OleDb;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,10 +52,11 @@ public partial class MigracaoView : UserControl
 
         try
         {
-            var (servidor, banco, usuario, senha) = ConfigService.CarregarConfiguracaoMySQL();
+            var (servidor, porta, banco, usuario, senha) = ConfigService.CarregarConfiguracaoMySQL();
             var dsn = ConfigService.CarregarConfiguracaoFirebird();
 
             if (string.IsNullOrWhiteSpace(servidor) ||
+                string.IsNullOrWhiteSpace(porta) ||
                 string.IsNullOrWhiteSpace(banco) ||
                 string.IsNullOrWhiteSpace(usuario) ||
                 string.IsNullOrWhiteSpace(senha) ||
@@ -79,7 +81,7 @@ public partial class MigracaoView : UserControl
                 return;
             }
 
-            _mysqlService = new MySQLService(servidor, banco, usuario, senha);
+            _mysqlService = new MySQLService(servidor, porta, banco, usuario, senha);
             _firebirdService = new FirebirdService(dsn);
 
             this.FindControl<Button>("btnMigrar").Click += BtnMigrar_Click;
@@ -171,8 +173,8 @@ public partial class MigracaoView : UserControl
             // Armazena as tabelas do MySQL
             _tabelasMySQL.Clear();
 
-            (string servidor, string banco, string usuario, string senha) = ConfigService.CarregarConfiguracaoMySQL();
-            string connectionString = $"Server={servidor};Database={banco};User Id={usuario};Password={senha};";
+            (string servidor, string banco, string porta,  string usuario, string senha) = ConfigService.CarregarConfiguracaoMySQL();
+            string connectionString = $"Server={servidor};Port={porta};Database={banco};User Id={usuario};Password={senha};";
 
             using (var connection = new MySqlConnection(connectionString))
             {
@@ -769,11 +771,16 @@ public partial class MigracaoView : UserControl
         if (string.IsNullOrWhiteSpace(nomeCliente))
             return;
 
-        // 2. Dados
-        var tabelas = ObterTabelasSelecionadas();
-        var (_, banco, _, _) = ConfigService.CarregarConfiguracaoMySQL();
+        // 2. Pergunta o diretório do banco de dados
+        string diretorioBanco = config.diretorio;
+        if (string.IsNullOrWhiteSpace(diretorioBanco))
+            return;
 
-        // 3. Monta o texto
+        // 3. Dados
+        var tabelas = ObterTabelasSelecionadas();
+        var (_,_, banco, _, _) = ConfigService.CarregarConfiguracaoMySQL();
+
+        // 4. Monta o texto
         StringBuilder feedback = new StringBuilder();
         feedback.AppendLine($"*Cliente:* _{nomeCliente}_");
         feedback.AppendLine($"*Tipo:* _Migração dados_");
@@ -790,7 +797,7 @@ public partial class MigracaoView : UserControl
         feedback.AppendLine(tabelasMigradas);
         feedback.AppendLine();
         feedback.AppendLine("_Realizado o banco de dados na web com os dados:_");
-        feedback.AppendLine($"`{banco}`");
+        feedback.AppendLine($"`{diretorioBanco}`");
         feedback.AppendLine();
         feedback.AppendLine("*Instruções:*");
         feedback.AppendLine();

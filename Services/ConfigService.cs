@@ -19,12 +19,13 @@ namespace BlackSync.Services
             return File.Exists(configFilePath);
         }
 
-        public static async Task SalvarConfiguracaoMySQL(Window janela, string servidor, string banco, string usuario, string senha)
+        public static async Task SalvarConfiguracaoMySQL(Window janela, string servidor, string porta, string banco, string usuario, string senha)
         {
             string[] linhas =
             {
                 "[MySQL]",
                 $"Servidor={servidor}",
+                $"Porta={porta}",
                 $"Banco={banco}",
                 $"Usuario={usuario}",
                 $"Senha={senha}"
@@ -44,12 +45,13 @@ namespace BlackSync.Services
             await SalvarArquivo(janela, linhas);
         }
 
-        public static async Task SalvarConfiguracaoEmpresa(Window janela,string razao, string empresaAntiga, string empresaNova, string filial)
+        public static async Task SalvarConfiguracaoEmpresa(Window janela,string razao, string diretorio, string empresaAntiga, string empresaNova, string filial)
         {
             string[] linhas =
             {
                 "[Empresa]",
                 $"Razao={razao}",
+                $"Diretorio={diretorio}",
                 $"EmpresaAntiga={empresaAntiga}",
                 $"EmpresaNova={empresaNova}",
                 $"Filial={filial}",
@@ -122,12 +124,12 @@ namespace BlackSync.Services
             return dsn;
         }
 
-        public static (string servidor, string banco, string usuario, string senha) CarregarConfiguracaoMySQL()
+        public static (string servidor, string porta, string banco, string usuario, string senha) CarregarConfiguracaoMySQL()
         {
             if (!File.Exists(configFilePath))
-                return ("", "", "", "");
+                return ("", "", "", "", "");
 
-            string servidor = "", banco = "", usuario = "", senha = "";
+            string servidor = "", porta = "", banco = "", usuario = "", senha = "";
             bool lendoMySQL = false;
 
             foreach (string linha in File.ReadAllLines(configFilePath))
@@ -143,21 +145,22 @@ namespace BlackSync.Services
                 switch (partes[0])
                 {
                     case "Servidor": servidor = partes[1]; break;
+                    case "Porta": porta = partes[1]; break;
                     case "Banco": banco = partes[1]; break;
                     case "Usuario": usuario = partes[1]; break;
                     case "Senha": senha = partes[1]; break;
                 }
             }
 
-            return (servidor, banco, usuario, senha);
+            return (servidor, porta, banco, usuario, senha);
         }
     
-        public static (string razao, string empresaAntiga, string empresaNova, string filial) CarregarConfiguracaoEmpresa()
+        public static (string razao, string diretorio, string empresaAntiga, string empresaNova, string filial) CarregarConfiguracaoEmpresa()
         {
             if (!File.Exists(configFilePath))
-                return ("", "", "", "");
+                return ("", "", "", "", "");
 
-            string razao = "", empresaAntiga = "", empresaNova = "", filial = "";
+            string razao = "", diretorio = "", empresaAntiga = "", empresaNova = "", filial = "";
             bool lendoEmpresa = false;
 
             foreach (string linha in File.ReadAllLines(configFilePath))
@@ -173,13 +176,14 @@ namespace BlackSync.Services
                 switch (partes[0])
                 {
                     case "Razao": razao = partes[1]; break;
+                    case "Diretorio": diretorio = partes[1]; break;    
                     case "EmpresaAntiga": empresaAntiga = partes[1]; break;
                     case "EmpresaNova": empresaNova = partes[1]; break;
                     case "Filial": filial = partes[1]; break;
                 }
             }
 
-            return (razao, empresaAntiga, empresaNova, filial);
+            return (razao, diretorio, empresaAntiga, empresaNova, filial);
 
         }
 

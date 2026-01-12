@@ -348,6 +348,7 @@ namespace BlackSync.Services
                         _ => null
                     };
 
+                    string filtroFilial = "(filial = ? or filial is null)";
                     string query;
 
                     // Tratamento para tabelas que usam IN (SELECT ...)
@@ -355,31 +356,31 @@ namespace BlackSync.Services
                     {
                         query = operador == "between"
                             ? $@"UPDATE {tabela} SET enviado = '0' WHERE nf IN (
-                                  SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ?  and filial = ?)"
+                                  SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ? AND {filtroFilial})"
                             : $@"UPDATE {tabela} SET enviado = '0' WHERE nf IN (
-                                  SELECT nf FROM notafiscal WHERE dtemissao {operador} ? and filial = ?)";
+                                  SELECT nf FROM notafiscal WHERE dtemissao {operador} ? AND {filtroFilial})";
                     }
                     else if (tabela == "itenspedidovenda")
                     {
                         query = operador == "between"
                             ? $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
-                                  SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? and filial = ?)"
+                                  SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? AND {filtroFilial})"
                             : $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
-                                  SELECT documento FROM pedidosvenda WHERE data {operador} ? and filial = ?)";
+                                  SELECT documento FROM pedidosvenda WHERE data {operador} ? AND {filtroFilial})";
                     }
                     else if (tabela == "itemnfentrada")
                     {
                         query = operador == "between"
                             ? $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
-                                  SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ?  and filial = ?)"
+                                  SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ?  AND {filtroFilial})"
                             : $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
-                                  SELECT documento FROM nfentrada WHERE dtlanca {operador} ? and filial = ?)";
+                                  SELECT documento FROM nfentrada WHERE dtlanca {operador} ? AND {filtroFilial})";
                     }
                     else if (colunaData != null)
                     {
                         query = operador == "between"
-                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE {colunaData} BETWEEN ? AND ? and filial = ?"
-                            : $@"UPDATE {tabela} SET enviado = '0' WHERE {colunaData} {operador} ? and filial = ?";
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE {colunaData} BETWEEN ? AND ? AND {filtroFilial}"
+                            : $@"UPDATE {tabela} SET enviado = '0' WHERE {colunaData} {operador} ? AND {filtroFilial}";
                     }
                     else
                     {
@@ -391,9 +392,13 @@ namespace BlackSync.Services
                     using (var cmd = new OdbcCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("?", dataInicio.Date);
-                        if (operador == "between" && dataFim.HasValue)
-                            cmd.Parameters.AddWithValue("?", dataFim.Value.Date);
-                        cmd.Parameters.AddWithValue("?", filial);
+
+                        if (operador == "between")
+                        {
+                            cmd.Parameters.AddWithValue("?", dataFim?.Date ?? dataInicio.Date);
+                        }
+
+                        cmd.Parameters.AddWithValue("?", string.IsNullOrEmpty(filial) ? (object)DBNull.Value : filial);
 
                         int linhasAfetadas = cmd.ExecuteNonQuery();
                         LogService.RegistrarLog("INFO", $"🔄 {linhasAfetadas} registros reabertos na tabela {tabela} (Firebird).");
@@ -433,6 +438,7 @@ namespace BlackSync.Services
                         _ => null
                     };
 
+                    string filtroFilial = "(filial = ? or filial is null)";
                     string query;
 
                     // Tratamento para tabelas que usam IN (SELECT ...)
@@ -440,31 +446,31 @@ namespace BlackSync.Services
                     {
                         query = operador == "between"
                             ? $@"UPDATE {tabela} SET enviado = '1' WHERE nf IN (
-                          SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ?  and filial = ?)"
+                          SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ?  AND {filtroFilial})"
                             : $@"UPDATE {tabela} SET enviado = '1' WHERE nf IN (
-                          SELECT nf FROM notafiscal WHERE dtemissao {operador} ? and filial = ?)";
+                          SELECT nf FROM notafiscal WHERE dtemissao {operador} ? AND {filtroFilial})";
                     }
                     else if (tabela == "itenspedidovenda")
                     {
                         query = operador == "between"
                             ? $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
-                          SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? and filial = ?)"
+                          SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? AND {filtroFilial})"
                             : $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
-                          SELECT documento FROM pedidosvenda WHERE data {operador} ? and filial = ?)";
+                          SELECT documento FROM pedidosvenda WHERE data {operador} ? AND {filtroFilial})";
                     }
                     else if (tabela == "itemnfentrada")
                     {
                         query = operador == "between"
                             ? $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
-                          SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ?  and filial = ?)"
+                          SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ?  AND {filtroFilial})"
                             : $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
-                          SELECT documento FROM nfentrada WHERE dtlanca {operador} ? and filial = ?)";
+                          SELECT documento FROM nfentrada WHERE dtlanca {operador} ? AND {filtroFilial})";
                     }
                     else if (colunaData != null)
                     {
                         query = operador == "between"
-                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE {colunaData} BETWEEN ? AND ? and filial = ?"
-                            : $@"UPDATE {tabela} SET enviado = '1' WHERE {colunaData} {operador} ? and filial = ?";
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE {colunaData} BETWEEN ? AND ? AND {filtroFilial}"
+                            : $@"UPDATE {tabela} SET enviado = '1' WHERE {colunaData} {operador} ? AND {filtroFilial}";
                     }
                     else
                     {
@@ -472,13 +478,16 @@ namespace BlackSync.Services
 
                         return;
                     }
-
                     using (var cmd = new OdbcCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("?", dataInicio.Date);
-                        if (operador == "between" && dataFim.HasValue)
-                            cmd.Parameters.AddWithValue("?", dataFim.Value.Date);
-                        cmd.Parameters.AddWithValue("?", filial);
+
+                        if (operador == "between")
+                        {
+                            cmd.Parameters.AddWithValue("?", dataFim?.Date ?? dataInicio.Date);
+                        }
+
+                        cmd.Parameters.AddWithValue("?", string.IsNullOrEmpty(filial) ? (object)DBNull.Value : filial);
 
                         int linhasAfetadas = cmd.ExecuteNonQuery();
                         LogService.RegistrarLog("INFO", $"🔄 {linhasAfetadas} registros reabertos na tabela {tabela} (Firebird).");
@@ -501,6 +510,7 @@ namespace BlackSync.Services
                     string filial = config.filial;
 
                     conn.Open();
+                    operador = operador.Trim().ToLower();
 
                     string colunaData = tabela switch
                     {
@@ -518,61 +528,52 @@ namespace BlackSync.Services
                         _ => null
                     };
 
+                    string filtroFilial = "(filial = ? or filial is null)";
                     string query;
 
-                    // Tratamento para tabelas que usam IN (SELECT ...)
                     if (tabela == "itensnf")
                     {
-                        query = operador == "between" 
-                            ? $@"DELETE from {tabela}
-                                WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ? and filial = ?)"
-                            : $@"DELETE from {tabela}
-                                WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao {operador} ? and filial = ?)";
+                        query = operador == "between"
+                            ? $@"DELETE from {tabela} WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ? AND {filtroFilial})"
+                            : $@"DELETE from {tabela} WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao {operador} ? AND {filtroFilial})";
                     }
                     else if (tabela == "itenspedidovenda")
                     {
                         query = operador == "between"
-                            ? $@"DELETE from {tabela}
-                                WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? and filial = ?)"
-                            : $@"DELETE from {tabela}
-                                WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data {operador} ? and filial = ?)";
+                            ? $@"DELETE from {tabela} WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? AND {filtroFilial})"
+                            : $@"DELETE from {tabela} WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data {operador} ? AND {filtroFilial})";
                     }
                     else if (tabela == "itemnfentrada")
                     {
                         query = operador == "between"
-                            ? $@"DELETE from {tabela}
-                                WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ? and filial = ?)"
-                            : $@"DELETE from {tabela}
-                                WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca {operador} ? and filial = ?)";
+                            ? $@"DELETE from {tabela} WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ? AND {filtroFilial})"
+                            : $@"DELETE from {tabela} WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca {operador} ? AND {filtroFilial})";
                     }
                     else if (colunaData != null)
                     {
                         query = operador == "between"
-                            ? $@"DELETE from {tabela} WHERE {colunaData} BETWEEN ? AND ? and filial = ?"
-                            : $@"DELETE from {tabela} WHERE {colunaData} {operador} ? and filial = ?";
+                            ? $@"DELETE from {tabela} WHERE {colunaData} BETWEEN ? AND ? AND {filtroFilial}"
+                            : $@"DELETE from {tabela} WHERE {colunaData} {operador} ? AND {filtroFilial}";
                     }
                     else
                     {
-                        LogService.RegistrarLog(
-                            "ERROR",
-                            $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida."
-                        );
-
+                        LogService.RegistrarLog("ERROR", $"⚠️ Tabela {tabela} não possui coluna de data.");
                         return;
                     }
 
                     using (var cmd = new OdbcCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("?", dataInicio.Date);
-                        if (operador == "between" && dataFim.HasValue)
-                            cmd.Parameters.AddWithValue("?", dataFim.Value.Date);
-                        cmd.Parameters.AddWithValue("?", filial);
+
+                        if (operador == "between")
+                        {
+                            cmd.Parameters.AddWithValue("?", dataFim?.Date ?? dataInicio.Date);
+                        }
+
+                        cmd.Parameters.AddWithValue("?", string.IsNullOrEmpty(filial) ? (object)DBNull.Value : filial);
 
                         int linhasAfetadas = cmd.ExecuteNonQuery();
-                        LogService.RegistrarLog(
-                            "INFO",
-                            $"🔄 {linhasAfetadas} registros excluídos na tabela {tabela} (Firebird)."
-                        );
+                        LogService.RegistrarLog("INFO", $"🔄 {linhasAfetadas} registros excluídos na tabela {tabela} (Firebird).");
                     }
                 }
             }

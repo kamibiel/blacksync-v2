@@ -22,7 +22,7 @@ public partial class ZplMigracaoView : UserControl
         InitializeComponent();
 
         var config = ConfigService.CarregarConfiguracaoMySQL();
-        _mySQLService = new MySQLService(config.servidor, config.banco, config.usuario, config.senha);
+        _mySQLService = new MySQLService(config.servidor, config.porta, config.banco, config.usuario, config.senha);
 
         btnSelecionar.Click += BtnSelecionar_Click;
         btnConverter.Click += BtnConverter_Click;

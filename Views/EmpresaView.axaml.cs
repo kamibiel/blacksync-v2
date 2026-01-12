@@ -23,6 +23,7 @@ namespace BlackSync.Views
             var config = ConfigService.CarregarConfiguracaoEmpresa();
 
             txtRazao.Text = config.razao;
+            txtDiretorio.Text = config.diretorio;
             txtEmpresaAntiga.Text = config.empresaAntiga;
             txtEmpresaNova.Text = config.empresaNova;
             txtFilial.Text = config.filial;
@@ -32,6 +33,7 @@ namespace BlackSync.Views
         private async void BtnLimpar_Click(object? sender, RoutedEventArgs e)
         {
             txtRazao.Text = string.Empty;
+            txtDiretorio.Text = string.Empty;
             txtEmpresaAntiga.Text = string.Empty;
             txtEmpresaNova.Text = string.Empty;
             txtFilial.Text = string.Empty;
@@ -43,6 +45,7 @@ namespace BlackSync.Views
 
             // Validação dos campos obrigatórios
             if (string.IsNullOrWhiteSpace(txtRazao.Text) ||
+                string.IsNullOrWhiteSpace(txtDiretorio.Text) ||
                 string.IsNullOrWhiteSpace(txtEmpresaAntiga.Text) ||
                 string.IsNullOrWhiteSpace(txtEmpresaNova.Text) ||
                 string.IsNullOrWhiteSpace(txtFilial.Text))
@@ -60,6 +63,7 @@ namespace BlackSync.Views
                 await ConfigService.SalvarConfiguracaoEmpresa(
                     janela,
                     txtRazao.Text,
+                    txtDiretorio.Text,
                     txtEmpresaAntiga.Text,
                     txtEmpresaNova.Text,
                     txtFilial.Text);
