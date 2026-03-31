@@ -4,95 +4,60 @@
              xmlns:local="clr-namespace:BlackSync.ViewModels"
              xmlns:utils="clr-namespace:BlackSync.Utils">
 
-  <!-- Recursos do XAML -->
-  <UserControl.DataContext>
-    <local:ManutencaoViewModel />
-  </UserControl.DataContext>
+	<UserControl.DataContext>
+		<local:ManutencaoViewModel />
+	</UserControl.DataContext>
 
-  <ScrollViewer>
-    <StackPanel Margin="20" Spacing="10">
+	<Grid Margin="20">
+		<ScrollViewer VerticalScrollBarVisibility="Auto">
+			<StackPanel Margin="10" Spacing="25" HorizontalAlignment="Center" MaxWidth="650">
 
-      <TextBlock Text="🛠️ Gestão do Banco de Dados" HorizontalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0 0 0 20" />
+				<TextBlock Text="Gestão do Banco de Dados" HorizontalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,0,0,10" />
 
-      <!-- Período / Categoria -->
-      <Grid Margin="0,5,0,5">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*" />
-          <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+				<Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto" Margin="0,5,0,5">
 
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <!-- Títulos -->
-          <RowDefinition Height="Auto"/>
-          <!-- Campos -->
-        </Grid.RowDefinitions>
+					<TextBlock Grid.Row="0" Grid.Column="0" Text="Período" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+					<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8">
+						<DatePicker x:Name="dpDe" Width="110"/>
+						<TextBlock Text="até" VerticalAlignment="Center" Foreground="#555"/>
+						<DatePicker x:Name="dpAte" Width="110"/>
+					</StackPanel>
 
-        <!-- Títulos -->
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="Período" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
-        <TextBlock Grid.Row="0" Grid.Column="1" Text="Categoria" FontSize="16" FontWeight="Bold" Margin="20,0,0,5"/>
+					<TextBlock Grid.Row="0" Grid.Column="1" Text="Categoria" FontSize="16" FontWeight="Bold" Margin="10,0,0,10"/>
+					<StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="15" Margin="10,0,0,0">
+						<CheckBox x:Name="cbEstoque" Content="Estoque"/>
+						<CheckBox x:Name="cbFinanceiro" Content="Financeiro"/>
+						<CheckBox x:Name="cbVendas" Content="Vendas"/>
+					</StackPanel>
+				</Grid>
 
-        <!-- Período -->
-        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="10">
-          <DatePicker x:Name="dpDe" Width="150"/>
-          <DatePicker x:Name="dpAte" Width="150"/>
-        </StackPanel>
+				<Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto" Margin="0,5,0,10">
 
-        <!-- Categoria -->
-        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="20" Margin="20,0,0,0">
-          <CheckBox x:Name="cbEstoque" Content="Estoque"/>
-          <CheckBox x:Name="cbFinanceiro" Content="Financeiro"/>
-          <CheckBox x:Name="cbVendas" Content="Vendas"/>
-        </StackPanel>
-      </Grid>
+					<TextBlock Grid.Row="0" Grid.Column="0" Text="Banco de dados" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+					<ComboBox x:Name="cbBanco" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,20,0" ItemsSource="{Binding BancoDeDados}"/>
 
-      <!-- Comparação / Banco de dados -->
-      <Grid Margin="0,5,0,5">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*" />
-          <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+					<TextBlock Grid.Row="0" Grid.Column="1" Text="Condição" FontSize="16" FontWeight="Bold" Margin="10,0,0,10"/>
+					<ComboBox x:Name="cbComparacao" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Margin="10,0,0,0" ItemsSource="{Binding Comparacoes}"/>
+				</Grid>
 
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <!-- Títulos -->
-          <RowDefinition Height="Auto"/>
-          <!-- Campos -->
-        </Grid.RowDefinitions>
+				<Separator Background="#E0E0E0" Margin="0,15"/>
 
-        <!-- Títulos -->
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="Banco de dados" FontSize="16" FontWeight="Bold" Margin="0,0,0,5"/>
-        <TextBlock Grid.Row="0" Grid.Column="1" Text="Condição" FontSize="16" FontWeight="Bold" Margin="20,0,0,5"/>
+				<StackPanel Spacing="15">
+					<TextBlock Text="Manutenção dos dados" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
 
-        <!-- Banco de dados -->
-        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="10">
-          <ComboBox x:Name="cbBanco" Width="150" ItemsSource="{Binding BancoDeDados}"/>
-        </StackPanel>
+					<WrapPanel HorizontalAlignment="Center" Margin="0,10,0,0">
+						<Button x:Name="btnReabrirDados" Content="Reabrir dados" Width="130" Margin="5" Background="#9C27B0" Foreground="White" FontWeight="Bold" HorizontalContentAlignment="Center" CornerRadius="4"/>
+						<Button x:Name="btnFecharDados" Content="Fechar dados" Width="130" Margin="5" Background="#9C27B0" Foreground="White" FontWeight="Bold" HorizontalContentAlignment="Center" CornerRadius="4"/>
+						<Button x:Name="btnExcluirDados" Content="Excluir dados" Width="130" Margin="5" Background="#D32F2F" Foreground="White" FontWeight="Bold" HorizontalContentAlignment="Center" CornerRadius="4"/>
+						<Button x:Name="btnAtualizarFilial" Content="Atualizar Filial" Width="130" Margin="5" Background="#9C27B0" Foreground="White" FontWeight="Bold" HorizontalContentAlignment="Center" CornerRadius="4"/>
+						<Button x:Name="btnAlterarNumeracao" Content="Replace Docs" Width="130" Margin="5" Background="#9C27B0" Foreground="White" FontWeight="Bold" HorizontalContentAlignment="Center" CornerRadius="4"/>
+						<Button x:Name="btnReplaceNfe" Content="Replace NFe" Width="130" Margin="5" Background="#9C27B0" Foreground="White" FontWeight="Bold" HorizontalContentAlignment="Center" CornerRadius="4"/>
+					</WrapPanel>
+				</StackPanel>
 
-        <!-- Comparações -->
-        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="10">
-          <ComboBox x:Name="cbComparacao" Width="150" ItemsSource="{Binding Comparacoes}"/>
-        </StackPanel>
-      </Grid>
+				<ProgressBar x:Name="pbProgresso" Height="10" Minimum="0" Maximum="100" IsVisible="False" Margin="0,10,0,0" Foreground="#8a0194"/>
 
-      <!-- Reaberturam fechamento e exclusão -->
-      <StackPanel Orientation="Horizontal" Spacing="50" Margin="0,5,0,5">
-
-        <!-- Botão de Reaberturam fechamento e exclusão -->
-        <StackPanel Orientation="Vertical">
-          <TextBlock Text="🔄 Manutenção dos dados" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
-          <StackPanel Orientation="Horizontal" Spacing="5">
-            <Button x:Name="btnReabrirDados" Content="Reabrir dados" Width="120" Margin="0,10,0,0"/>
-            <Button x:Name="btnFecharDados" Content="Fechar dados" Width="120" Margin="0,10,0,0"/>
-            <Button x:Name="btnExcluirDados" Content="Excluir dados" Width="120" Margin="0,10,0,0"/>
-            <Button x:Name="btnAtualizarFilial" Content="Atualizar Filial" Width="120" Margin="0,10,0,0"/>
-            <Button x:Name="btnAlterarNumeracao" Content="Replace" Width="120" Margin="0,10,0,0" />
-          </StackPanel>
-        </StackPanel>
-      </StackPanel>
-      
-      <ProgressBar x:Name="pbProgresso" Height="20" Minimum="0" Maximum="100" IsVisible="False"/>
-
-    </StackPanel>
-  </ScrollViewer>
+			</StackPanel>
+		</ScrollViewer>
+	</Grid>
 </UserControl>

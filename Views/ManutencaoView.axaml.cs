@@ -49,6 +49,7 @@ namespace BlackSync.Views
             btnFecharDados.IsEnabled = habilitar;
             btnReabrirDados.IsEnabled = habilitar;
             btnAlterarNumeracao.IsEnabled = habilitar;
+            btnReplaceNfe.IsEnabled = habilitar;
         }
 
         private async void OnViewLoaded(object? sender, VisualTreeAttachmentEventArgs e)
@@ -84,6 +85,7 @@ namespace BlackSync.Views
                 this.FindControl<Button>("btnExcluirDados").Click += BtnExcluirDados_Click;
                 this.FindControl<Button>("btnAtualizarFilial").Click += BtnAtualizarFilial_Click;
                 this.FindControl<Button>("btnAlterarNumeracao").Click += BtnAlterarNumeracao_Click;
+                this.FindControl<Button>("btnReplaceNfe").Click += BtnReplaceNfe_Click;
             }
             catch (Exception ex)
             {
@@ -1336,5 +1338,91 @@ namespace BlackSync.Views
             }
         }
 
+        private async void BtnReplaceNfe_Click(object sender, EventArgs e)
+        {
+            var window = this.GetVisualRoot() as Window;
+
+            try
+            {
+                LogService.RegistrarLog(
+                    "INFO",
+                    "🔄 Iniciando o processo de replace da coluna NFe da tabela notafiscal"
+                );
+
+                // Pega o período selecionado
+                DateTime? dataInicio = dpDe.SelectedDate?.DateTime;
+                DateTime? dataFim = dpAte.SelectedDate?.DateTime;
+                string operadorSelecionado = cbComparacao.SelectedItem?.ToString()?.ToLower();
+
+                string bancoSelecionado = cbBanco.SelectedItem?.ToString() ?? "Não selecionado";
+
+                if (dataInicio == null || (operadorSelecionado == "between" && dataFim == null))
+                {
+                    await MessageService.MostrarMensagem(window, "Erro", "Selecione um período válido.");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(bancoSelecionado) || bancoSelecionado == "Não selecionado")
+                {
+                    await MessageService.MostrarMensagem(window, "Erro", "Selecione pelo menos um banco de dados.");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(operadorSelecionado))
+                {
+                    await MessageService.MostrarMensagem(window, "Aviso", "Selecione uma condição.");
+                    return;
+                }
+
+                LogService.RegistrarLog(
+                    "INFO",
+                    $"📤 Foi selecionado o perído De: {dataInicio} até: {dataFim}."
+                );
+
+                var mensagem =
+                        $"🔍 Resumo da Operação{Environment.NewLine}" +
+                        $"🗄 Banco de Dados: {bancoSelecionado}{Environment.NewLine}" +
+                        $"⚠️ Deseja realizar o Replace do caminho da NFe na tabela NOTAFISCAL?{Environment.NewLine}" +
+                        $"Período: {dataInicio:dd/MM/yyyy}{Environment.NewLine}" + 
+                        $"❗ Deseja realmente continuar?";
+
+                var resposta = await MessageService.MostrarDialogConfirmacaoPersonalizado(this, "Confirmar Replace NFe", mensagem);
+
+                if (resposta == OpcaoConfirmacao.Sim)
+                {
+                    pbProgresso.IsVisible = true;
+                    pbProgresso.IsIndeterminate = true;
+                    SetarStatusBotoes(false);
+
+                    await Task.Run(() =>
+                    {
+                        // Executa no Firebird
+                        if (bancoSelecionado == "Firebird" || bancoSelecionado == "Ambos")
+                        {
+                            _firebirdService.ExecutarReplaceNfe(operadorSelecionado, dataInicio.Value, dataFim);
+                        }
+
+                        // Futura implementação para MySQL
+                        if (bancoSelecionado == "MySQL" || bancoSelecionado == "Ambos")
+                        {
+                            _mysqlService.ExecutarReplaceNfe(operadorSelecionado, dataInicio.Value, dataFim);
+                        }
+                    });
+
+                    LogService.RegistrarLog("SUCCESS", "🚀 Processo de Replace NFe finalizado com sucesso.");
+                    await MessageService.MostrarDialogPersonalizado(window, "Sucesso", "✅ Caminhos da NFe atualizados com sucesso!");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.RegistrarLog("ERROR", $"❌ Falha no Replace NFe: {ex.Message}");
+                await MessageService.MostrarDialogPersonalizado(window, "Erro", $"Erro: {ex.Message}");
+            }
+            finally
+            {
+                SetarStatusBotoes(true);
+                pbProgresso.IsVisible = false;
+            }
+        }
     }
 }

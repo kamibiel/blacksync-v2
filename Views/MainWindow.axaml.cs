@@ -16,6 +16,8 @@ namespace BlackSync.Views
         {
             InitializeComponent();
 
+            MainContent.Content = new HomeView();
+
             this.Icon = new WindowIcon("Assets/icone.ico");
         }
 
@@ -32,9 +34,14 @@ namespace BlackSync.Views
                 {
                     switch (item.Title)
                     {
+                        case "Home":
+                            MainContent.Content = new HomeView();
+                            LogService.RegistrarLog("INFO", "📌 Acesso à tela de Home.");
+                            break;
+
                         case "Migração":
                             MainContent.Content = new MigracaoView();
-                            LogService.RegistrarLog("INFO", "📌 Acesso à tela de Configurações.");
+                            LogService.RegistrarLog("INFO", "📌 Acesso à tela de Migração.");
                             break;
 
                         case "Manutenção":
@@ -102,6 +109,29 @@ namespace BlackSync.Views
                         };
                         LogService.RegistrarLog("INFO", $"Subitem não tratado: {subItemName}");
                         break;
+                }
+            }
+        }
+
+        public void NavegarParaConfiguracao()
+        {
+            // 1. Muda o conteúdo principal para a tela de Configuração
+            MainContent.Content = new ConfiguracaoView();
+
+            // 2. Expande o menu na barra lateral
+            dynamic vm = this.DataContext;
+            if (vm != null && vm.MenuItems != null)
+            {
+                foreach (var item in vm.MenuItems)
+                {
+                    if (item.Title == "Configuração")
+                    {
+                        item.IsExpanded = true; // Abre o submenu
+                    }
+                    else
+                    {
+                        item.IsExpanded = false; // (Opcional) Fecha os outros menus
+                    }
                 }
             }
         }

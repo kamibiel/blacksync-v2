@@ -8,6 +8,7 @@ namespace BlackSync.ViewModels
 
         public MainWindowViewModel()
         {
+            MenuItems.Add(new MenuItemViewModel { Title = "Home" });
             MenuItems.Add(new MenuItemViewModel
             {
                 Title = "Migração",

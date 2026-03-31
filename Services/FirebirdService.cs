@@ -320,16 +320,12 @@ namespace BlackSync.Services
                     "Erro", Icon.Error);
             }
         }
-
         public void ReabrirMovimentoFirebird(string tabela, string operador, DateTime dataInicio, DateTime? dataFim = null)
         {
             try
             {
                 using (var conn = new OdbcConnection(connectionString))
                 {
-                    var config = ConfigService.CarregarConfiguracaoEmpresa();
-                    string filial = config.filial;
-
                     conn.Open();
 
                     string colunaData = tabela switch
@@ -348,167 +344,148 @@ namespace BlackSync.Services
                         _ => null
                     };
 
-                    string filtroFilial = "(filial = ? or filial is null)";
+                    if (colunaData == null && tabela != "itensnf" && tabela != "itenspedidovenda" && tabela != "itemnfentrada")
+                    {
+                        LogService.RegistrarLog("ERROR", $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida.");
+                        return;
+                    }
+
+                    // BLINDAGEM DE DATAS: Transforma a data num texto YYYY-MM-DD exato para o Firebird
+                    string strDataInicio = dataInicio.ToString("yyyy-MM-dd");
+                    string strDataFim = (dataFim ?? dataInicio).ToString("yyyy-MM-dd");
+
                     string query;
 
-                    // Tratamento para tabelas que usam IN (SELECT ...)
+                    // A Query agora é montada de forma direta, limpa e sem filtro de filial
                     if (tabela == "itensnf")
                     {
                         query = operador == "between"
-                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE nf IN (
-                                  SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ? AND {filtroFilial})"
-                            : $@"UPDATE {tabela} SET enviado = '0' WHERE nf IN (
-                                  SELECT nf FROM notafiscal WHERE dtemissao {operador} ? AND {filtroFilial})";
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN '{strDataInicio}' AND '{strDataFim}')"
+                            : $@"UPDATE {tabela} SET enviado = '0' WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao {operador} '{strDataInicio}')";
                     }
                     else if (tabela == "itenspedidovenda")
                     {
                         query = operador == "between"
-                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
-                                  SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? AND {filtroFilial})"
-                            : $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
-                                  SELECT documento FROM pedidosvenda WHERE data {operador} ? AND {filtroFilial})";
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN '{strDataInicio}' AND '{strDataFim}')"
+                            : $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data {operador} '{strDataInicio}')";
                     }
                     else if (tabela == "itemnfentrada")
                     {
                         query = operador == "between"
-                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
-                                  SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ?  AND {filtroFilial})"
-                            : $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (
-                                  SELECT documento FROM nfentrada WHERE dtlanca {operador} ? AND {filtroFilial})";
-                    }
-                    else if (colunaData != null)
-                    {
-                        query = operador == "between"
-                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE {colunaData} BETWEEN ? AND ? AND {filtroFilial}"
-                            : $@"UPDATE {tabela} SET enviado = '0' WHERE {colunaData} {operador} ? AND {filtroFilial}";
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN '{strDataInicio}' AND '{strDataFim}')"
+                            : $@"UPDATE {tabela} SET enviado = '0' WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca {operador} '{strDataInicio}')";
                     }
                     else
                     {
-                        LogService.RegistrarLog("ERROR", $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida.");
-
-                        return;
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '0' WHERE {colunaData} BETWEEN '{strDataInicio}' AND '{strDataFim}'"
+                            : $@"UPDATE {tabela} SET enviado = '0' WHERE {colunaData} {operador} '{strDataInicio}'";
                     }
 
                     using (var cmd = new OdbcCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("?", dataInicio.Date);
-
-                        if (operador == "between")
-                        {
-                            cmd.Parameters.AddWithValue("?", dataFim?.Date ?? dataInicio.Date);
-                        }
-
-                        cmd.Parameters.AddWithValue("?", string.IsNullOrEmpty(filial) ? (object)DBNull.Value : filial);
-
                         int linhasAfetadas = cmd.ExecuteNonQuery();
                         LogService.RegistrarLog("INFO", $"🔄 {linhasAfetadas} registros reabertos na tabela {tabela} (Firebird).");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogService.RegistrarLog("cccc", $"❌ Erro ao reabrir movimento na tabela {tabela} (Firebird): {ex.Message}");
-            }
-        }
 
-        public void FecharMovimentoFirebird(string tabela, string operador, DateTime dataInicio, DateTime? dataFim = null)
-        {
-            try
-            {
-                using (var conn = new OdbcConnection(connectionString))
-                {
-                    var config = ConfigService.CarregarConfiguracaoEmpresa();
-                    string filial = config.filial;
-
-                    conn.Open();
-
-                    string colunaData = tabela switch
-                    {
-                        "baixapagar" => "dtlanca",
-                        "baixareceber" => "dtlanca",
-                        "contacartao" => "datavenda",
-                        "pagar" => "dtlanca",
-                        "receber" => "dtlanca",
-                        "abrecaixa" => "dataabre",
-                        "caixa" => "data",
-                        "notafiscal" => "dtemissao",
-                        "pedidosvenda" => "data",
-                        "movestoque" => "data",
-                        "nfentrada" => "dtlanca",
-                        _ => null
-                    };
-
-                    string filtroFilial = "(filial = ? or filial is null)";
-                    string query;
-
-                    // Tratamento para tabelas que usam IN (SELECT ...)
-                    if (tabela == "itensnf")
-                    {
-                        query = operador == "between"
-                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE nf IN (
-                          SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ?  AND {filtroFilial})"
-                            : $@"UPDATE {tabela} SET enviado = '1' WHERE nf IN (
-                          SELECT nf FROM notafiscal WHERE dtemissao {operador} ? AND {filtroFilial})";
-                    }
-                    else if (tabela == "itenspedidovenda")
-                    {
-                        query = operador == "between"
-                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
-                          SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? AND {filtroFilial})"
-                            : $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
-                          SELECT documento FROM pedidosvenda WHERE data {operador} ? AND {filtroFilial})";
-                    }
-                    else if (tabela == "itemnfentrada")
-                    {
-                        query = operador == "between"
-                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
-                          SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ?  AND {filtroFilial})"
-                            : $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (
-                          SELECT documento FROM nfentrada WHERE dtlanca {operador} ? AND {filtroFilial})";
-                    }
-                    else if (colunaData != null)
-                    {
-                        query = operador == "between"
-                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE {colunaData} BETWEEN ? AND ? AND {filtroFilial}"
-                            : $@"UPDATE {tabela} SET enviado = '1' WHERE {colunaData} {operador} ? AND {filtroFilial}";
-                    }
-                    else
-                    {
-                        LogService.RegistrarLog("ERROR", $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida.");
-
-                        return;
-                    }
-                    using (var cmd = new OdbcCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("?", dataInicio.Date);
-
-                        if (operador == "between")
+                        // Mantive a ferramenta de debug no log, caso alguma tabela ainda dê problema
+                        if (linhasAfetadas <= 1)
                         {
-                            cmd.Parameters.AddWithValue("?", dataFim?.Date ?? dataInicio.Date);
+                            LogService.RegistrarLog("WARNING", $"⚠️ Poucas ou nenhuma linha afetada na tabela {tabela}. A query executada foi: {query}");
                         }
-
-                        cmd.Parameters.AddWithValue("?", string.IsNullOrEmpty(filial) ? (object)DBNull.Value : filial);
-
-                        int linhasAfetadas = cmd.ExecuteNonQuery();
-                        LogService.RegistrarLog("INFO", $"🔄 {linhasAfetadas} registros reabertos na tabela {tabela} (Firebird).");
                     }
                 }
             }
             catch (Exception ex)
             {
                 LogService.RegistrarLog("ERROR", $"❌ Erro ao reabrir movimento na tabela {tabela} (Firebird): {ex.Message}");
+                throw;
             }
         }
+        public void FecharMovimentoFirebird(string tabela, string operador, DateTime dataInicio, DateTime? dataFim = null)
+        {
+            try
+            {
+                using (var conn = new OdbcConnection(connectionString))
+                {
+                    conn.Open();
 
+                    string colunaData = tabela switch
+                    {
+                        "baixapagar" => "dtlanca",
+                        "baixareceber" => "dtlanca",
+                        "contacartao" => "datavenda",
+                        "pagar" => "dtlanca",
+                        "receber" => "dtlanca",
+                        "abrecaixa" => "dataabre",
+                        "caixa" => "data",
+                        "notafiscal" => "dtemissao",
+                        "pedidosvenda" => "data",
+                        "movestoque" => "data",
+                        "nfentrada" => "dtlanca",
+                        _ => null
+                    };
+
+                    if (colunaData == null && tabela != "itensnf" && tabela != "itenspedidovenda" && tabela != "itemnfentrada")
+                    {
+                        LogService.RegistrarLog("ERROR", $"⚠️ Tabela {tabela} não possui uma coluna de data válida definida.");
+                        return;
+                    }
+
+                    // Transforma a data num texto YYYY-MM-DD exato para o Firebird
+                    string strDataInicio = dataInicio.ToString("yyyy-MM-dd");
+                    string strDataFim = (dataFim ?? dataInicio).ToString("yyyy-MM-dd");
+
+                    string query;
+
+                    if (tabela == "itensnf")
+                    {
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN '{strDataInicio}' AND '{strDataFim}')"
+                            : $@"UPDATE {tabela} SET enviado = '1' WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao {operador} '{strDataInicio}')";
+                    }
+                    else if (tabela == "itenspedidovenda")
+                    {
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN '{strDataInicio}' AND '{strDataFim}')"
+                            : $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data {operador} '{strDataInicio}')";
+                    }
+                    else if (tabela == "itemnfentrada")
+                    {
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN '{strDataInicio}' AND '{strDataFim}')"
+                            : $@"UPDATE {tabela} SET enviado = '1' WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca {operador} '{strDataInicio}')";
+                    }
+                    else
+                    {
+                        query = operador == "between"
+                            ? $@"UPDATE {tabela} SET enviado = '1' WHERE {colunaData} BETWEEN '{strDataInicio}' AND '{strDataFim}'"
+                            : $@"UPDATE {tabela} SET enviado = '1' WHERE {colunaData} {operador} '{strDataInicio}'";
+                    }
+
+                    using (var cmd = new OdbcCommand(query, conn))
+                    {
+                        int linhasAfetadas = cmd.ExecuteNonQuery();
+                        LogService.RegistrarLog("INFO", $"🔄 {linhasAfetadas} registros fechados na tabela {tabela} (Firebird).");
+
+                        if (linhasAfetadas <= 1)
+                        {
+                            LogService.RegistrarLog("WARNING", $"⚠️ Poucas ou nenhuma linha afetada na tabela {tabela}. A query executada foi: {query}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.RegistrarLog("ERROR", $"❌ Erro ao fechar movimento na tabela {tabela} (Firebird): {ex.Message}");
+                throw;
+            }
+        }
         public void ExcluirMovimentoFirebird(string tabela, string operador, DateTime dataInicio, DateTime? dataFim = null)
         {
             try
             {
                 using (var conn = new OdbcConnection(connectionString))
                 {
-                    var config = ConfigService.CarregarConfiguracaoEmpresa();
-                    string filial = config.filial;
-
                     conn.Open();
                     operador = operador.Trim().ToLower();
 
@@ -528,61 +505,60 @@ namespace BlackSync.Services
                         _ => null
                     };
 
-                    string filtroFilial = "(filial = ? or filial is null)";
-                    string query;
-
-                    if (tabela == "itensnf")
-                    {
-                        query = operador == "between"
-                            ? $@"DELETE from {tabela} WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN ? AND ? AND {filtroFilial})"
-                            : $@"DELETE from {tabela} WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao {operador} ? AND {filtroFilial})";
-                    }
-                    else if (tabela == "itenspedidovenda")
-                    {
-                        query = operador == "between"
-                            ? $@"DELETE from {tabela} WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN ? AND ? AND {filtroFilial})"
-                            : $@"DELETE from {tabela} WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data {operador} ? AND {filtroFilial})";
-                    }
-                    else if (tabela == "itemnfentrada")
-                    {
-                        query = operador == "between"
-                            ? $@"DELETE from {tabela} WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN ? AND ? AND {filtroFilial})"
-                            : $@"DELETE from {tabela} WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca {operador} ? AND {filtroFilial})";
-                    }
-                    else if (colunaData != null)
-                    {
-                        query = operador == "between"
-                            ? $@"DELETE from {tabela} WHERE {colunaData} BETWEEN ? AND ? AND {filtroFilial}"
-                            : $@"DELETE from {tabela} WHERE {colunaData} {operador} ? AND {filtroFilial}";
-                    }
-                    else
+                    if (colunaData == null && tabela != "itensnf" && tabela != "itenspedidovenda" && tabela != "itemnfentrada")
                     {
                         LogService.RegistrarLog("ERROR", $"⚠️ Tabela {tabela} não possui coluna de data.");
                         return;
                     }
 
+                    string strDataInicio = dataInicio.ToString("yyyy-MM-dd");
+                    string strDataFim = (dataFim ?? dataInicio).ToString("yyyy-MM-dd");
+
+                    string query;
+
+                    if (tabela == "itensnf")
+                    {
+                        query = operador == "between"
+                            ? $@"DELETE from {tabela} WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao BETWEEN '{strDataInicio}' AND '{strDataFim}')"
+                            : $@"DELETE from {tabela} WHERE nf IN (SELECT nf FROM notafiscal WHERE dtemissao {operador} '{strDataInicio}')";
+                    }
+                    else if (tabela == "itenspedidovenda")
+                    {
+                        query = operador == "between"
+                            ? $@"DELETE from {tabela} WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data BETWEEN '{strDataInicio}' AND '{strDataFim}')"
+                            : $@"DELETE from {tabela} WHERE documento IN (SELECT documento FROM pedidosvenda WHERE data {operador} '{strDataInicio}')";
+                    }
+                    else if (tabela == "itemnfentrada")
+                    {
+                        query = operador == "between"
+                            ? $@"DELETE from {tabela} WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca BETWEEN '{strDataInicio}' AND '{strDataFim}')"
+                            : $@"DELETE from {tabela} WHERE documento IN (SELECT documento FROM nfentrada WHERE dtlanca {operador} '{strDataInicio}')";
+                    }
+                    else
+                    {
+                        query = operador == "between"
+                            ? $@"DELETE from {tabela} WHERE {colunaData} BETWEEN '{strDataInicio}' AND '{strDataFim}'"
+                            : $@"DELETE from {tabela} WHERE {colunaData} {operador} '{strDataInicio}'";
+                    }
+
                     using (var cmd = new OdbcCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("?", dataInicio.Date);
-
-                        if (operador == "between")
-                        {
-                            cmd.Parameters.AddWithValue("?", dataFim?.Date ?? dataInicio.Date);
-                        }
-
-                        cmd.Parameters.AddWithValue("?", string.IsNullOrEmpty(filial) ? (object)DBNull.Value : filial);
-
                         int linhasAfetadas = cmd.ExecuteNonQuery();
                         LogService.RegistrarLog("INFO", $"🔄 {linhasAfetadas} registros excluídos na tabela {tabela} (Firebird).");
+
+                        if (linhasAfetadas <= 1)
+                        {
+                            LogService.RegistrarLog("WARNING", $"⚠️ Poucas ou nenhuma linha excluída na tabela {tabela}. A query executada foi: {query}");
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
                 LogService.RegistrarLog("ERROR", $"❌ Erro ao excluir os movimentos na tabela {tabela} (Firebird): {ex.Message}");
+                throw;
             }
         }
-
         public void AtualizarFilialFirebird(string tabela, int xFilial)
         {
             try
@@ -615,7 +591,6 @@ namespace BlackSync.Services
                 LogService.RegistrarLog("ERROR", $"❌ Erro ao atualizar a filial na tabela {tabela} (Firebird): {ex.Message}");
             }
         }
-
         public void AlterarDocumentoFirebird(string tabela, int xEmpresa, int yEmpresa)
         {
             try
@@ -665,6 +640,43 @@ namespace BlackSync.Services
             catch (Exception ex)
             {
                 LogService.RegistrarLog("ERROR", $"❌ Erro ao alterar a numeração do documento na tabela {tabela} (Firebird): {ex.Message}");
+            }
+        }
+        public void ExecutarReplaceNfe(string operador, DateTime dataInicio, DateTime? dataFim = null)
+        {
+            try
+            {
+                using (var conn = new OdbcConnection(connectionString))
+                {
+                    conn.Open();
+
+                    string strDataInicio = dataInicio.ToString("yyyy-MM-dd");
+                    string strDataFim = (dataFim ?? dataInicio).ToString("yyyy-MM-dd");
+
+                    string condicaoData = operador == "between"
+                        ? $"dtemissao BETWEEN '{strDataInicio}' AND '{strDataFim}'"
+                        : $"dtemissao {operador} '{strDataInicio}'";
+
+                    string query = $@"
+                UPDATE notafiscal 
+                SET nfe = REPLACE(
+                            REPLACE(nfe, 'C:NFENOTAS fe', 'C:\\NFE\\NOTAS\\NFe\\'), 
+                            'C:NFENOTASNFe', 'C:\\NFE\\NOTAS\\NFe\\'
+                          ) 
+                WHERE {condicaoData} 
+                AND (nfe LIKE 'C:NFENOTAS%' OR nfe LIKE 'C:NFENOTASNFe%')";
+
+                    using (var cmd = new OdbcCommand(query, conn))
+                    {
+                        int linhasAfetadas = cmd.ExecuteNonQuery();
+                        LogService.RegistrarLog("INFO", $"✅ Replace NFe concluído: {linhasAfetadas} registros atualizados.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.RegistrarLog("ERROR", $"❌ Erro no Replace NFe: {ex.Message}");
+                throw;
             }
         }
     }

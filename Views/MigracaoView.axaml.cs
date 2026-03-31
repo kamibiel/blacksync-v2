@@ -36,6 +36,23 @@ public partial class MigracaoView : UserControl
     private List<string> _tabelasParaCriar = new List<string>();
     private List<string> _tabelasComErro = new List<string>();
 
+    private readonly List<string> _tabelasCadastro = new()
+    {
+        "bancos", "bandeira", "carro", "carrocli", "cartao", "centrocusto", "codbarras", "contadorclientes", 
+        "contadorfat", "contadorkit", "contadorvendas", "contascorrentes", "contatosjur", "cores", "empresas", "fabricantes", 
+        "formadepagamento", "fornecedores", "fotos", "funcionarios", "grupoprodutos", "gruposervico", "pessoafisica", "pessoajuridica", 
+        "produtos", "servico", "tamanho", "transportadora", "unidades", "uniprod"
+    };
+
+    // Suas tabelas de movimento baseadas nas regras do FirebirdService
+    private readonly List<string> _tabelasMovimento = new()
+    {
+        "abrecaixa", "baixapagar", "baixareceber", "caixa", "carta_correcao", "chequepre", "chequesemi", "chequesimp", "comissoes", 
+        "comissoespagas", "compras", "contacartao", "itemnfentrada", "itenscompras", "itensnf", "itenspedidosabertos", 
+        "itenspedidoscancelados", "itenspedidovenda", "movbancario", "movestoque", "nfentrada", "notafiscal", "pagar", "pedidosabertos", 
+        "pedidoscancelados", "pedidosvenda ", "receber"
+    };
+
     public MigracaoView()
     {
         InitializeComponent();
@@ -267,6 +284,47 @@ public partial class MigracaoView : UserControl
             item.Selecionado = selecionar;
 
         AtualizarTextoCheckbox();
+    }
+
+    private void AtualizarSelecaoPorCategoria(List<string> tabelasAlvo, bool selecionar)
+    {
+        _atualizandoCheckInternamente = true;
+
+        foreach (var item in _tabelas)
+        {
+            // Pega o nome da tabela na lista do Avalonia, converte para minúsculo e vê se está na nossa lista de alvo
+            if (tabelasAlvo.Contains(item.Nome.ToLowerInvariant()))
+            {
+                item.Selecionado = selecionar;
+            }
+        }
+
+        _atualizandoCheckInternamente = false;
+        AtualizarTextoCheckbox(); // Atualiza o visual do botão "Marcar Todas"
+    }
+
+    private void CbCadastro_Changed(object? sender, RoutedEventArgs e)
+    {
+        if (_atualizandoCheckInternamente) return;
+        bool selecionar = (sender as CheckBox)?.IsChecked == true;
+        AtualizarSelecaoPorCategoria(_tabelasCadastro, selecionar);
+    }
+
+    private void CbMovimento_Changed(object? sender, RoutedEventArgs e)
+    {
+        if (_atualizandoCheckInternamente) return;
+        bool selecionar = (sender as CheckBox)?.IsChecked == true;
+        AtualizarSelecaoPorCategoria(_tabelasMovimento, selecionar);
+    }
+
+    private void CbCadastroMovimento_Changed(object? sender, RoutedEventArgs e)
+    {
+        if (_atualizandoCheckInternamente) return;
+        bool selecionar = (sender as CheckBox)?.IsChecked == true;
+
+        // Concatena (junta) as duas listas para marcar tanto cadastro quanto movimento
+        var tabelasAmbos = _tabelasCadastro.Concat(_tabelasMovimento).ToList();
+        AtualizarSelecaoPorCategoria(tabelasAmbos, selecionar);
     }
 
     private List<string> ObterTabelasSelecionadas()

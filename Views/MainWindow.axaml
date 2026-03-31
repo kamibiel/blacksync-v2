@@ -4,12 +4,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BlackSync.Views"
         x:Class="BlackSync.Views.MainWindow"
-        Width="900" Height="850"        
-        ExtendClientAreaToDecorationsHint="True"
+        Width="850" Height="650" ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="-1"
-        CanResize="False"
-        WindowStartupLocation="CenterScreen">
+        CanResize="False" WindowStartupLocation="CenterScreen">
 
   <DockPanel>
 

@@ -939,5 +939,63 @@ namespace BlackSync.Services
             }
         }
 
+        public void ExecutarReplaceNfe(string operador, DateTime dataInicio, DateTime? dataFim = null)
+        {
+            try
+            {
+                using (var conn = new MySqlConnection(connectionString))
+                {
+                    var config = ConfigService.CarregarConfiguracaoEmpresa();
+                    string filial = config.filial;
+                    conn.Open();
+
+                    // 1. DESATIVA ESCAPES: Isso faz com que o MySQL trate a '\' como texto comum
+                    using (var cmdMode = new MySqlCommand("SET sql_mode='NO_BACKSLASH_ESCAPES'", conn))
+                    {
+                        cmdMode.ExecuteNonQuery();
+                    }
+
+                    string condicaoData = operador == "between"
+                        ? "dtemissao BETWEEN @inicio AND @fim"
+                        : $"dtemissao {operador} @inicio";
+
+                    // 2. QUERY COM TRIPLO REPLACE: Trata ' fe\\', ' fe\' e 'NFe'
+                    // Como desativamos o escape acima, usamos apenas duas barras para representar o texto real
+                    string query = $@"
+                        UPDATE notafiscal 
+                        SET nfe = REPLACE(
+                                    REPLACE(
+                                        REPLACE(
+                                            REPLACE(nfe, 'C:NFENOTAS fe\\', 'C:\NFE\NOTAS\NFe\'),
+                                            'C:NFENOTAS fe\', 'C:\NFE\NOTAS\NFe\'
+                                        ), 
+                                        'C:NFENOTASNFe', 'C:\NFE\NOTAS\NFe\'
+                                    ),
+                                    'C:NFENOTASNFE', 'C:\NFE\NOTAS\NFe\'
+                                  ) 
+                        WHERE {condicaoData} 
+                        AND nfe LIKE 'C:NFENOTAS%'
+                        AND (@filial IS NULL OR filial = @filial)";
+
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@inicio", dataInicio.Date);
+                        if (operador == "between")
+                            cmd.Parameters.AddWithValue("@fim", dataFim?.Date ?? dataInicio.Date);
+
+                        cmd.Parameters.AddWithValue("@filial", string.IsNullOrEmpty(filial) ? (object)DBNull.Value : filial);
+
+                        int linhasAfetadas = cmd.ExecuteNonQuery();
+                        LogService.RegistrarLog("INFO", $"✅ Replace NFe concluído no MySQL: {linhasAfetadas} registros atualizados.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.RegistrarLog("ERROR", $"❌ Erro no Replace NFe (MySQL): {ex.Message}");
+                throw;
+            }
+        }
+
     }
 }
