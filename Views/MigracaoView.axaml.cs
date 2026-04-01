@@ -50,7 +50,7 @@ public partial class MigracaoView : UserControl
         "abrecaixa", "baixapagar", "baixareceber", "caixa", "carta_correcao", "chequepre", "chequesemi", "chequesimp", "comissoes", 
         "comissoespagas", "compras", "contacartao", "itemnfentrada", "itenscompras", "itensnf", "itenspedidosabertos", 
         "itenspedidoscancelados", "itenspedidovenda", "movbancario", "movestoque", "nfentrada", "notafiscal", "pagar", "pedidosabertos", 
-        "pedidoscancelados", "pedidosvenda ", "receber"
+        "pedidoscancelados", "pedidosvenda", "receber"
     };
 
     public MigracaoView()
