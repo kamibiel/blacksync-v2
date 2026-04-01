@@ -40,7 +40,7 @@ public partial class MigracaoView : UserControl
     {
         "bancos", "bandeira", "carro", "carrocli", "cartao", "centrocusto", "codbarras", "contadorclientes", 
         "contadorfat", "contadorkit", "contadorvendas", "contascorrentes", "contatosjur", "cores", "empresas", "fabricantes", 
-        "formadepagamento", "fornecedores", "fotos", "funcionarios", "grupoprodutos", "gruposervico", "pessoafisica", "pessoajuridica", 
+        "formadepagamento", "fornecedores", "fotos", "funcionarios", "grupoprodutos", "gruposervicos", "kit", "modelo", "pessoafisica", "pessoajuridica", 
         "produtos", "servico", "tamanho", "transportadora", "unidades", "uniprod"
     };
 
